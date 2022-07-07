@@ -1,0 +1,45 @@
+{
+  "name": "react-router-guards",
+  "version": "1.0.0",
+  "description": "guard middleware for react-router v6",
+  "keywords": [
+    "react",
+    "router",
+    "guard"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Col0ring",
+    "email": "1561999073@qq.com"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "npm-run-all --parallel lint:* && npm run format",
+    "lint:eslint": "eslint . --fix --ext .ts,.tsx,.js,.jsx",
+    "lint:stylelint": "stylelint **/*.css --fix --allow-empty-input",
+    "format": "cross-env NODE_ENV=production prettier . --write --no-error-on-unmatched-pattern"
+  },
+  "devDependencies": {
+    "@col0ring/eslint-config": "^0.0.7",
+    "@col0ring/stylelint-config": "^0.0.7",
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-angular": "^17.0.3",
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.19.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.0.0",
+    "prettier-plugin-packagejson": "^2.2.18",
+    "react": "^18.2.0",
+    "react-router": "^6.3.0",
+    "stylelint": "^14.9.1",
+    "typescript": "^4.7.4"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0"
+  }
+}
