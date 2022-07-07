@@ -1,0 +1,5 @@
+{
+  "*.css": ["npm run lint:stylelint", "npm run format"],
+  "*.{js,jsx,ts,tsx}": ["npm run lint:eslint", "npm run format"],
+  "*.{md,yaml,json,html,svg}": ["npm run format"]
+}
