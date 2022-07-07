@@ -7,4 +7,8 @@ export interface GuardConfig {
 
 export interface GuardObject extends RouteObject, GuardConfig {}
 
-export type GuardMiddleware = (to: GuardObject, from: GuardObject, next) => void
+export type GuardMiddleware = (
+  to: GuardObject,
+  from: GuardObject,
+  next: () => void
+) => void
