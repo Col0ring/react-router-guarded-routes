@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { GuardedRouteConfig } from './type'
+import { GuardedRouteConfig } from '../type'
 import { useGuardContext } from './useGuardContext'
 
 export interface GuardProps {

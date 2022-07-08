@@ -1,5 +1,5 @@
 import React from 'react'
-import { GuardContext, GuardContextValue } from './context'
+import { GuardContext, GuardContextValue } from './internal/context'
 
 export interface GuardProviderProps extends GuardContextValue {
   children: React.ReactNode

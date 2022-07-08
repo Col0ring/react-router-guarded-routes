@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { RouteObject, useRoutes } from 'react-router'
-import { Guard } from './guard'
+import { Guard } from './internal/guard'
 import { GuardedRouteObject } from './type'
 
 type LocationArg = Parameters<typeof useRoutes>[1]
