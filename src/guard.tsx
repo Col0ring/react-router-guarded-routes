@@ -1,10 +1,22 @@
-import React from 'react'
-import { Route } from 'react-router'
-import { GuardConfig } from './type'
-type RouteProps = Parameters<typeof Route>[0]
+import React, { useMemo } from 'react'
+import { GuardedRouteConfig } from './type'
+import { useGuardContext } from './useGuardContext'
 
-export type GuardProps = RouteProps & GuardConfig
+export interface GuardProps {
+  guards?: GuardedRouteConfig['guards']
+  children?: React.ReactNode
+}
 
-export const Guard: React.FC<GuardProps> = () => {
-  return <div>4</div>
+export const Guard: React.FC<GuardProps> = (props) => {
+  const { children, guards: guardsProp } = props
+  const { guards: globalGuards, error, loading } = useGuardContext()
+  const guards = useMemo(
+    () => [...(guardsProp || []), ...(globalGuards || [])],
+    [globalGuards, guardsProp]
+  )
+  const hasGuard = useMemo(() => guards.length !== 0, [guards.length])
+  if (hasGuard) {
+    return <>{loading}</>
+  }
+  return <>{children}</>
 }

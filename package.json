@@ -1,5 +1,5 @@
 {
-  "name": "react-router-interceptor-guards",
+  "name": "react-router-guarded-routes",
   "version": "1.0.0",
   "description": "guard middleware for react-router v6",
   "keywords": [

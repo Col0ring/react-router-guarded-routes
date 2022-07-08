@@ -55,7 +55,7 @@ importers:
       react-dom: ^18.0.0
       react-router: ^6.3.0
       react-router-dom: ^6.3.0
-      react-router-interceptor-guards: workspace:*
+      react-router-guarded-routes: workspace:*
       typescript: ^4.6.3
       vite: ^2.9.9
     dependencies:
@@ -63,7 +63,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-router: 6.3.0_react@18.2.0
       react-router-dom: 6.3.0_biqbaboplfbrettd7655fr4n2y
-      react-router-interceptor-guards: link:../..
+      react-router-guarded-routes: link:../..
     devDependencies:
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6

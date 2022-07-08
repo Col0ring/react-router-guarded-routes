@@ -1,14 +1,16 @@
-import { RouteObject } from 'react-router'
+import { RouteObject, To } from 'react-router'
 
-export interface GuardConfig {
+export interface GuardedRouteConfig {
   guards?: GuardMiddleware[]
   [props: PropertyKey]: any
 }
 
-export interface GuardObject extends RouteObject, GuardConfig {}
+export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {}
+
+export type NextFunction = (to?: To) => Promise<void>
 
 export type GuardMiddleware = (
-  to: GuardObject,
-  from: GuardObject,
-  next: () => void
+  to: GuardedRouteObject,
+  from: GuardedRouteObject,
+  next: NextFunction
 ) => void
