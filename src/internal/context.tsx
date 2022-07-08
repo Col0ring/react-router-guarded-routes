@@ -1,8 +1,17 @@
 import React, { createContext } from 'react'
+import { Location } from 'react-router'
 import { GuardedRouteConfig } from '../type'
 export interface GuardContextValue {
-  loading?: React.ReactElement
-  error?: React.ReactElement
+  fallback?: React.ReactElement
   guards?: GuardedRouteConfig['guards']
+  location: {
+    to: Location | null
+    from: Location | null
+  }
 }
-export const GuardContext = createContext<GuardContextValue>({})
+export const GuardContext = createContext<GuardContextValue>({
+  location: {
+    to: null,
+    from: null,
+  },
+})

@@ -34,7 +34,6 @@ function createGuardedRoutesFromChildren(children: React.ReactNode) {
       ...element.props,
     }
 
-    // 递归
     if (element.props.children) {
       route.children = createGuardedRoutesFromChildren(element.props.children)
     }
