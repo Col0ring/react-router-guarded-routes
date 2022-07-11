@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route } from 'react-router'
+import { invariant } from './internal/utils'
 import { GuardedRouteConfig } from './type'
-import { invariant } from './utils'
 type RouteProps = Parameters<typeof Route>[0]
 
 export type GuardedRouteProps = RouteProps & GuardedRouteConfig

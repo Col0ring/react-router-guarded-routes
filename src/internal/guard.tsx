@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Location, NavigateOptions, To, useNavigate } from 'react-router'
 import { GuardedRouteConfig, GuardMiddleware } from '../type'
-import { isNumber, isPromise } from '../utils'
 import { useGuardContext } from './useGuardContext'
+import { useRootContext } from './useRootContext'
+import { isNumber, isPromise } from './utils'
 
 export interface GuardProps {
   guards?: GuardedRouteConfig['guards']
@@ -33,7 +34,8 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const { children, guards: guardsProp } = props
   const [validated, setValidated] = useState(false)
 
-  const { guards: globalGuards, fallback, location } = useGuardContext()
+  const { location } = useRootContext()
+  const { guards: globalGuards, fallback } = useGuardContext()
   const navigate = useNavigate()
   const guards = useMemo(
     () => [...(guardsProp || []), ...(globalGuards || [])],

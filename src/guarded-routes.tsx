@@ -1,9 +1,9 @@
 import React from 'react'
 import { RoutesProps } from 'react-router'
 import { GuardedRoute } from './guarded-route'
+import { invariant } from './internal/utils'
 import { GuardedRouteObject } from './type'
 import { useGuardedRoutes } from './useGuardedRoutes'
-import { invariant } from './utils'
 
 export interface GuardedRoutesProps extends RoutesProps {}
 

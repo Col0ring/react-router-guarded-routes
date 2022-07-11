@@ -1,5 +1,6 @@
 export * from './guard-provider'
 export * from './guarded-route'
 export * from './guarded-routes'
+export * from './root-provider'
 export * from './type'
 export * from './useGuardedRoutes'

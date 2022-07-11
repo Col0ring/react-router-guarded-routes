@@ -1,5 +1,5 @@
-import { useGuardContext } from './useGuardContext'
+import { useRootContext } from './useRootContext'
 
-export function useInGuardContext(): boolean {
-  return useGuardContext().location.to !== null
+export function useInGuardContext() {
+  return useRootContext().location.to !== null
 }
