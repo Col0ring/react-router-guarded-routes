@@ -12,6 +12,7 @@ export interface GuardConfigContextValue {
     location: Location,
     prevLocation: Location | null
   ) => Promise<boolean> | boolean
+  enableFallback: (location: Location, prevLocation: Location | null) => boolean
   location: {
     to: Location | null
     from: Location | null
@@ -24,4 +25,5 @@ export const GuardConfigContext = createContext<GuardConfigContextValue>({
     from: null,
   },
   enableGuards: (loc, prevLoc) => loc.pathname !== prevLoc?.pathname,
+  enableFallback: () => true,
 })

@@ -1,6 +1,7 @@
 import React from 'react'
 import { RoutesProps } from 'react-router'
 import { GuardedRoute } from './guarded-route'
+import { useInGuardConfigContext } from './internal/useInGuardContext'
 import { invariant } from './internal/utils'
 import { GuardedRouteObject } from './type'
 import { useGuardedRoutes } from './useGuardedRoutes'
@@ -45,6 +46,10 @@ function createGuardedRoutesFromChildren(children: React.ReactNode) {
 }
 
 export const GuardedRoutes: React.FC<GuardedRoutesProps> = (props) => {
+  invariant(
+    useInGuardConfigContext(),
+    `You cannot render the <GuardedRoutes> outside a <GuardConfigProvider>.`
+  )
   const { children, location } = props
   return useGuardedRoutes(createGuardedRoutesFromChildren(children), location)
 }

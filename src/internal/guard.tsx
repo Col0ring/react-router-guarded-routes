@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Location, NavigateOptions, To, useNavigate } from 'react-router'
-import { GuardedRouteConfig, GuardMiddleware } from '../type'
+import { GuardedRouteObject, GuardMiddleware } from '../type'
 import { useGuardConfigContext } from './useGuardConfigContext'
 import { useGuardContext } from './useGuardContext'
 import { isNumber, isPromise } from './utils'
 
 export interface GuardProps {
-  guards?: GuardedRouteConfig['guards']
+  route: GuardedRouteObject
   children?: React.ReactNode
 }
 
@@ -31,10 +31,11 @@ type GuardedResult =
     }
 
 export const Guard: React.FC<GuardProps> = (props) => {
-  const { children, guards: guardsProp } = props
+  const { children, route } = props
+  const { guards: guardsProp, fallback: fallbackProp } = route
   const [validated, setValidated] = useState(false)
 
-  const { location, enableGuards } = useGuardConfigContext()
+  const { location, enableGuards, enableFallback } = useGuardConfigContext()
   const { guards: globalGuards, fallback } = useGuardContext()
   const navigate = useNavigate()
   const guards = useMemo(
@@ -42,9 +43,15 @@ export const Guard: React.FC<GuardProps> = (props) => {
     [globalGuards, guardsProp]
   )
   const hasGuard = useMemo(() => guards.length !== 0, [guards.length])
+
   const canRunGuard = useMemo(
     () => enableGuards(location.to as Location, location.from),
     [enableGuards, location.from, location.to]
+  )
+
+  const canRunFallback = useMemo(
+    () => enableFallback(location.to as Location, location.from),
+    [enableFallback, location.from, location.to]
   )
 
   const runGuard = useCallback(
@@ -82,7 +89,8 @@ export const Guard: React.FC<GuardProps> = (props) => {
                   })
                   break
               }
-            }
+            },
+            { route }
           )
           if (isPromise(guardResult)) {
             guardResult.catch((error) => reject(error))
@@ -92,8 +100,9 @@ export const Guard: React.FC<GuardProps> = (props) => {
         }
       })
     },
-    [location]
+    [location.from, location.to, route]
   )
+
   const runGuards = useCallback(async () => {
     for (const guard of guards) {
       const result = await runGuard(guard)
@@ -111,16 +120,27 @@ export const Guard: React.FC<GuardProps> = (props) => {
   }, [guards, navigate, runGuard])
 
   useEffect(() => {
-    if (canRunGuard) {
+    function validate() {
       setValidated(false)
       if (hasGuard) {
         runGuards()
       }
     }
-  }, [runGuards, location, hasGuard, enableGuards, canRunGuard])
+    if (isPromise(canRunGuard)) {
+      canRunGuard.then((done) => {
+        if (done) {
+          validate()
+        }
+      })
+      return
+    }
+    if (canRunGuard) {
+      validate()
+    }
+  }, [runGuards, hasGuard, enableGuards, canRunGuard])
 
-  if (hasGuard && canRunGuard && !validated) {
-    return <>{fallback}</>
+  if (hasGuard && !validated && canRunFallback) {
+    return <>{fallbackProp || fallback}</>
   }
   return <>{children}</>
 }

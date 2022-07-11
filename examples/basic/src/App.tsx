@@ -23,13 +23,39 @@ const App: React.FC = () => {
       <Link to="/a/b" style={{ marginRight: 10 }}>
         /a/b
       </Link>
+      {/* <Routes>
+        <Route path="/" element={<div>111</div>} />
+        <Route path="/" element={<div>111</div>} />
+        <Route
+          path="/a/*"
+          element={
+            <div>
+              22
+              <Routes>
+                <Route path="c" element={<div>ccc</div>} />
+              </Routes>
+              <Outlet />
+            </div>
+          }
+        >
+          <Route path="b" element={<Route1 />} />
+        </Route>
+      </Routes> */}
       <GuardConfigProvider>
         <GuardProvider fallback={<div>loading...</div>}>
           <GuardedRoutes>
             <GuardedRoute
               guards={[
+                (to, from, next, { route }) => {
+                  next()
+                },
+              ]}
+              path="/"
+              element={<div>111</div>}
+            />
+            <GuardedRoute
+              guards={[
                 (to, from, next) => {
-                  console.log(to, from)
                   next()
                 },
               ]}
@@ -38,9 +64,9 @@ const App: React.FC = () => {
             />
             <GuardedRoute
               path="/a/*"
+              fallback={<div>loading inside...</div>}
               guards={[
                 (to, from, next) => {
-                  console.log(to, from)
                   // next()
                 },
               ]}
@@ -50,9 +76,8 @@ const App: React.FC = () => {
                   <GuardedRoutes>
                     <GuardedRoute
                       guards={[
-                        (to, from, next) => {
-                          console.log(to, from)
-                          next()
+                        (to, from, next, { route }) => {
+                          // next()
                         },
                       ]}
                       path="c"
@@ -65,8 +90,7 @@ const App: React.FC = () => {
             >
               <GuardedRoute
                 guards={[
-                  (to, from, next) => {
-                    console.log(to, from)
+                  (to, from, next, { route }) => {
                     next()
                   },
                 ]}

@@ -9,7 +9,7 @@ function transformGuardedRoutes(
   guardedRoutes: GuardedRouteObject[]
 ): RouteObject[] {
   return guardedRoutes.map((guardedRoute) => {
-    const { element, children, guards } = guardedRoute
+    const { element, children } = guardedRoute
     return {
       ...guardedRoute,
       element:
@@ -17,7 +17,7 @@ function transformGuardedRoutes(
           ? React.createElement(
               Guard,
               {
-                guards: guards,
+                route: guardedRoute,
               },
               element
             )
