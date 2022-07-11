@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Location, NavigateOptions, To, useNavigate } from 'react-router'
 import { GuardedRouteConfig, GuardMiddleware } from '../type'
+import { useGuardConfigContext } from './useGuardConfigContext'
 import { useGuardContext } from './useGuardContext'
-import { useRootContext } from './useRootContext'
 import { isNumber, isPromise } from './utils'
 
 export interface GuardProps {
@@ -34,7 +34,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const { children, guards: guardsProp } = props
   const [validated, setValidated] = useState(false)
 
-  const { location } = useRootContext()
+  const { location, enableGuards } = useGuardConfigContext()
   const { guards: globalGuards, fallback } = useGuardContext()
   const navigate = useNavigate()
   const guards = useMemo(
@@ -42,6 +42,10 @@ export const Guard: React.FC<GuardProps> = (props) => {
     [globalGuards, guardsProp]
   )
   const hasGuard = useMemo(() => guards.length !== 0, [guards.length])
+  const canRunGuard = useMemo(
+    () => enableGuards(location.to as Location, location.from),
+    [enableGuards, location.from, location.to]
+  )
 
   const runGuard = useCallback(
     (guard: GuardMiddleware) => {
@@ -107,15 +111,15 @@ export const Guard: React.FC<GuardProps> = (props) => {
   }, [guards, navigate, runGuard])
 
   useEffect(() => {
-    if (location.to?.pathname !== location.from?.pathname) {
+    if (canRunGuard) {
       setValidated(false)
       if (hasGuard) {
         runGuards()
       }
     }
-  }, [runGuards, location, hasGuard])
+  }, [runGuards, location, hasGuard, enableGuards, canRunGuard])
 
-  if (hasGuard && !validated) {
+  if (hasGuard && canRunGuard && !validated) {
     return <>{fallback}</>
   }
   return <>{children}</>

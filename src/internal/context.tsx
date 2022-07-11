@@ -7,16 +7,21 @@ export interface GuardContextValue {
 }
 export const GuardContext = createContext<GuardContextValue>({})
 
-export interface RootContextValue {
+export interface GuardConfigContextValue {
+  enableGuards: (
+    location: Location,
+    prevLocation: Location | null
+  ) => Promise<boolean> | boolean
   location: {
     to: Location | null
     from: Location | null
   }
 }
 
-export const RootContext = createContext<RootContextValue>({
+export const GuardConfigContext = createContext<GuardConfigContextValue>({
   location: {
     to: null,
     from: null,
   },
+  enableGuards: (loc, prevLoc) => loc.pathname !== prevLoc?.pathname,
 })
