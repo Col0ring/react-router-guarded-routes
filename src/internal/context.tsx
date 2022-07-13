@@ -1,6 +1,10 @@
 import React, { createContext } from 'react'
 import { Location } from 'react-router'
-import { GuardedRouteConfig } from '../type'
+import {
+  FromGuardRouteOptions,
+  GuardedRouteConfig,
+  ToGuardRouteOptions,
+} from '../type'
 export interface GuardContextValue {
   fallback?: React.ReactElement
   guards?: GuardedRouteConfig['guards']
@@ -9,10 +13,13 @@ export const GuardContext = createContext<GuardContextValue>({})
 
 export interface GuardConfigContextValue {
   enableGuards: (
-    location: Location,
-    prevLocation: Location | null
+    to: ToGuardRouteOptions,
+    from: FromGuardRouteOptions
   ) => Promise<boolean> | boolean
-  enableFallback: (location: Location, prevLocation: Location | null) => boolean
+  enableFallback: (
+    to: ToGuardRouteOptions,
+    from: FromGuardRouteOptions
+  ) => boolean
   location: {
     to: Location | null
     from: Location | null
@@ -24,6 +31,6 @@ export const GuardConfigContext = createContext<GuardConfigContextValue>({
     to: null,
     from: null,
   },
-  enableGuards: (loc, prevLoc) => loc.pathname !== prevLoc?.pathname,
+  enableGuards: (to, from) => to.location.pathname !== from.location?.pathname,
   enableFallback: () => true,
 })

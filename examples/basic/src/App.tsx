@@ -23,6 +23,9 @@ const App: React.FC = () => {
       <Link to="/a/b" style={{ marginRight: 10 }}>
         /a/b
       </Link>
+      <Link to="/b/c" style={{ marginRight: 10 }}>
+        /b/c
+      </Link>
       {/* <Routes>
         <Route path="/" element={<div>111</div>} />
         <Route path="/" element={<div>111</div>} />
@@ -46,7 +49,7 @@ const App: React.FC = () => {
           <GuardedRoutes>
             <GuardedRoute
               guards={[
-                (to, from, next, { route }) => {
+                (to, from, next) => {
                   next()
                 },
               ]}
@@ -67,7 +70,8 @@ const App: React.FC = () => {
               fallback={<div>loading inside...</div>}
               guards={[
                 (to, from, next) => {
-                  // next()
+                  console.log(to)
+                  next()
                 },
               ]}
               element={
@@ -76,25 +80,34 @@ const App: React.FC = () => {
                   <GuardedRoutes>
                     <GuardedRoute
                       guards={[
-                        (to, from, next, { route }) => {
-                          // next()
+                        (to, from, next) => {
+                          next()
                         },
                       ]}
-                      path="c"
+                      path=":c"
                       element={<div>ccc</div>}
                     />
                   </GuardedRoutes>
                   <Outlet />
                 </div>
               }
+            />
+            <GuardedRoute
+              guards={[
+                (to, from, next) => {
+                  next()
+                },
+              ]}
+              path="b/*"
+              element={<Route1 />}
             >
               <GuardedRoute
                 guards={[
-                  (to, from, next, { route }) => {
+                  (to, from, next) => {
                     next()
                   },
                 ]}
-                path="b"
+                path=":c"
                 element={<Route1 />}
               />
             </GuardedRoute>

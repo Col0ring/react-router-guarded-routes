@@ -1,8 +1,26 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Location, NavigateOptions, To, useNavigate } from 'react-router'
-import { GuardedRouteObject, GuardMiddleware } from '../type'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import {
+  Location,
+  NavigateOptions,
+  To,
+  UNSAFE_RouteContext as RouteContext,
+  useNavigate,
+} from 'react-router'
+import {
+  FromGuardRouteOptions,
+  GuardedRouteObject,
+  GuardMiddleware,
+  ToGuardRouteOptions,
+} from '../type'
 import { useGuardConfigContext } from './useGuardConfigContext'
 import { useGuardContext } from './useGuardContext'
+import { usePrevious } from './usePrevious'
 import { isNumber, isPromise } from './utils'
 
 export interface GuardProps {
@@ -34,7 +52,6 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const { children, route } = props
   const { guards: guardsProp, fallback: fallbackProp } = route
   const [validated, setValidated] = useState(false)
-
   const { location, enableGuards, enableFallback } = useGuardConfigContext()
   const { guards: globalGuards, fallback } = useGuardContext()
   const navigate = useNavigate()
@@ -44,14 +61,30 @@ export const Guard: React.FC<GuardProps> = (props) => {
   )
   const hasGuard = useMemo(() => guards.length !== 0, [guards.length])
 
+  const { matches } = useContext(RouteContext)
+  const prevMatches = usePrevious(matches)
+  const toGuardRouteOptions: ToGuardRouteOptions = useMemo(
+    () => ({
+      location: location.to as Location,
+      matches,
+    }),
+    [location.to, matches]
+  )
+  const fromGuardRouteOptions: FromGuardRouteOptions = useMemo(
+    () => ({
+      location: location.from,
+      matches: prevMatches || [],
+    }),
+    [location.from, prevMatches]
+  )
   const canRunGuard = useMemo(
-    () => enableGuards(location.to as Location, location.from),
-    [enableGuards, location.from, location.to]
+    () => enableGuards(toGuardRouteOptions, fromGuardRouteOptions),
+    [enableGuards, fromGuardRouteOptions, toGuardRouteOptions]
   )
 
   const canRunFallback = useMemo(
-    () => enableFallback(location.to as Location, location.from),
-    [enableFallback, location.from, location.to]
+    () => enableFallback(toGuardRouteOptions, fromGuardRouteOptions),
+    [enableFallback, fromGuardRouteOptions, toGuardRouteOptions]
   )
 
   const runGuard = useCallback(
@@ -59,8 +92,8 @@ export const Guard: React.FC<GuardProps> = (props) => {
       return new Promise<GuardedResult>((resolve, reject) => {
         try {
           const guardResult = guard(
-            location.to as Location,
-            location.from || null,
+            toGuardRouteOptions,
+            fromGuardRouteOptions,
             (...args: [To, NavigateOptions?] | [number] | []) => {
               switch (args.length) {
                 case 0:
@@ -89,8 +122,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
                   })
                   break
               }
-            },
-            { route }
+            }
           )
           if (isPromise(guardResult)) {
             guardResult.catch((error) => reject(error))
@@ -100,7 +132,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
         }
       })
     },
-    [location.from, location.to, route]
+    [fromGuardRouteOptions, toGuardRouteOptions]
   )
 
   const runGuards = useCallback(async () => {

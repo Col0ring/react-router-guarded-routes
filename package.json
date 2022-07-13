@@ -1,6 +1,6 @@
 {
   "name": "react-router-guarded-routes",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "a guard middleware for react-router v6",
   "keywords": [
     "react",
@@ -27,6 +27,9 @@
     "lint:eslint": "eslint . --fix --ext .ts,.tsx,.js,.jsx",
     "lint:stylelint": "stylelint **/*.css --fix --allow-empty-input",
     "format": "cross-env NODE_ENV=production prettier . --write --no-error-on-unmatched-pattern"
+  },
+  "dependencies": {
+    "types-kit": "^0.0.8"
   },
   "devDependencies": {
     "@col0ring/eslint-config": "^0.0.7",

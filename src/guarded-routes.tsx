@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { RoutesProps } from 'react-router'
 import { GuardedRoute } from './guarded-route'
 import { useInGuardConfigContext } from './internal/useInGuardContext'
@@ -50,6 +50,11 @@ export const GuardedRoutes: React.FC<GuardedRoutesProps> = (props) => {
     useInGuardConfigContext(),
     `You cannot render the <GuardedRoutes> outside a <GuardConfigProvider>.`
   )
-  const { children, location } = props
-  return useGuardedRoutes(createGuardedRoutesFromChildren(children), location)
+  const { children, location: locationProp } = props
+
+  const routes = useMemo(
+    () => createGuardedRoutesFromChildren(children),
+    [children]
+  )
+  return useGuardedRoutes(routes, locationProp)
 }

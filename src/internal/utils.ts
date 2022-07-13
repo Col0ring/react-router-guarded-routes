@@ -16,3 +16,7 @@ export function isPromise<T = any>(value: any): value is Promise<T> {
 export function isNumber(value: any): value is number {
   return typeof value === 'number'
 }
+
+export function isString(value: any): value is string {
+  return typeof value === 'string'
+}

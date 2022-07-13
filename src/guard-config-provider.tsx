@@ -6,7 +6,9 @@ import { usePrevious } from './internal/usePrevious'
 import { invariant } from './internal/utils'
 
 export interface GuardConfigProviderProps
-  extends Partial<Pick<GuardConfigContextValue, 'enableGuards'>> {
+  extends Partial<
+    Pick<GuardConfigContextValue, 'enableGuards' | 'enableFallback'>
+  > {
   children: React.ReactNode
 }
 
@@ -24,7 +26,8 @@ export const GuardConfigProvider: React.FC<GuardConfigProviderProps> = (
 
   const contextValue: GuardConfigContextValue = useMemo(
     () => ({
-      enableGuards: (loc, prevLoc) => loc.pathname !== prevLoc?.pathname,
+      enableGuards: (to, from) =>
+        to.location.pathname !== from.location?.pathname,
       enableFallback: () => true,
       ...args,
       location: {

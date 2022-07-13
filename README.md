@@ -1,6 +1,6 @@
 # React-Router-Guarded-Routes
 
-A guard middleware for react-router v6, inspired by [`react-router-guards`](https://github.com/Upstatement/react-router-guards)
+A guard middleware for react-router v6, inspired by [`react-router-guards`](https://github.com/Upstatement/react-router-guards).
 
 ## Install
 
@@ -88,10 +88,9 @@ import {
   GuardProvider,
 } from 'react-router-guarded-routes'
 
-const logGuard: GuardMiddleware = (to, from, next, { route }) => {
-  console.log(to, from) // to Location (see react-router), from Location.
-  console.log(route) // the GuardedRouteObject.
-  // run the next middleware.
+const logGuard: GuardMiddleware = (to, from, next) => {
+  console.log(to) // { location, matches }
+  console.log(from)
   next()
 }
 
@@ -128,14 +127,12 @@ import {
   GuardProvider,
 } from 'react-router-guarded-routes'
 
-const logGuard: GuardMiddleware = (to, from, next, { route }) => {
-  console.log(to, from) // to Location (see react-router), from Location.
-  console.log(route) // the GuardedRouteObject.
-  // run the next middleware.
+const logGuard: GuardMiddleware = (to, from, next) => {
+  console.log(to, from)
   next()
 }
 
-const fooGuard: GuardMiddleware = (to, from, next, { route }) => {
+const fooGuard: GuardMiddleware = (to, from, next) => {
   console.log('foo')
   next()
 }
@@ -169,24 +166,16 @@ export default function App() {
 
 ## APIS
 
-### Components
-
-#### GuardConfigProvider
-
-#### GuardProvider
-
-#### GuardedRoutes
-
-#### GuardedRoute
-
-### Hooks
-
-#### useGuardedRoutes
-
 ### Types
 
 ```ts
-import { Location, NavigateFunction, RouteObject } from 'react-router'
+import {
+  Location,
+  NavigateFunction,
+  RouteMatch,
+  RouteObject,
+} from 'react-router'
+import { ReplacePick } from 'types-kit'
 
 export interface GuardedRouteConfig {
   guards?: GuardMiddleware[]
@@ -199,14 +188,66 @@ export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {}
 export interface NextFunction extends NavigateFunction {
   (): void
 }
-export interface GuardMiddlewareOptions {
+
+export interface GuardedRouteMatch<ParamKey extends string = string>
+  extends Omit<RouteMatch<ParamKey>, 'route'> {
   route: GuardedRouteObject
 }
 
+export interface ToGuardRouteOptions {
+  location: Location
+  matches: GuardedRouteMatch[]
+}
+
+export interface FromGuardRouteOptions
+  extends ReplacePick<
+    ToGuardRouteOptions,
+    ['location'],
+    [ToGuardRouteOptions['location'] | null]
+  > {}
+
 export type GuardMiddleware = (
-  to: Location,
-  from: Location | null,
-  next: NextFunction,
-  options: GuardMiddlewareOptions
+  to: ToGuardRouteOptions,
+  from: FromGuardRouteOptions,
+  next: NextFunction
 ) => Promise<void> | void
 ```
+
+### Components
+
+#### GuardConfigProvider
+
+The GuardConfigProvider should not be used more than one in an app, make sure it's at the topmost level inside the Router (BrowserRouter and HashRouter).
+
+And it provides APIs for whether to run guard middlewares and whether to display the fallback element:
+
+```tsx
+import React from 'react'
+
+export interface GuardConfigProviderProps {
+  enableGuard?: (
+    location: ToGuardRouteOptions,
+    prevLocation: FromGuardRouteOptions
+  ) => Promise<boolean> | boolean
+  enableFallback?: (
+    location: ToGuardRouteOptions,
+    prevLocation: FromGuardRouteOptions
+  ) => boolean
+  children: React.ReactNode
+}
+```
+
+| Prop             | Optional | Default | Description                             |
+| ---------------- | :------: | :-----: | --------------------------------------- |
+| `enableGuard`    |   Yes    |         | whether to run guard middlewares        |
+| `enableFallback` |   Yes    |         | whether to display the fallback element |
+
+#### GuardProvider
+
+#### GuardedRoutes
+
+#### GuardedRoute
+
+### Hooks
+
+#### useGuardedRoutes
