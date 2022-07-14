@@ -3,11 +3,65 @@ import { BrowserRouter, Link, Outlet } from 'react-router-dom'
 import {
   GuardConfigProvider,
   GuardedRoute,
+  GuardedRouteObject,
   GuardedRoutes,
   GuardProvider,
+  useGuardedRoutes,
 } from 'react-router-guarded-routes'
 import Route1 from './route1'
 
+const routes: GuardedRouteObject[] = [
+  {
+    path: '/',
+    element: <div>111</div>,
+    guards: [
+      (to, from, next) => {
+        next()
+      },
+    ],
+  },
+  {
+    path: '/a/*',
+    fallback: <div>loading inside...</div>,
+    guards: [
+      (to, from, next) => {
+        console.log(to)
+        next()
+      },
+    ],
+    element: (
+      <div>
+        22
+        <GuardedRoutes>
+          <GuardedRoute
+            guards={[
+              (to, from, next) => {
+                next()
+              },
+            ]}
+            path=":c"
+            element={<div>ccc</div>}
+          />
+        </GuardedRoutes>
+        <Outlet />
+      </div>
+    ),
+  },
+  {
+    path: '/b/*',
+    element: <Route1 />,
+    children: [
+      {
+        path: ':c',
+        element: <Route1 />,
+      },
+    ],
+  },
+]
+
+function Routes() {
+  return <>{useGuardedRoutes(routes)}</>
+}
 const App: React.FC = () => {
   return (
     <BrowserRouter>
@@ -46,16 +100,8 @@ const App: React.FC = () => {
       </Routes> */}
       <GuardConfigProvider>
         <GuardProvider fallback={<div>loading...</div>}>
-          <GuardedRoutes>
-            <GuardedRoute
-              guards={[
-                (to, from, next) => {
-                  next()
-                },
-              ]}
-              path="/"
-              element={<div>111</div>}
-            />
+          <Routes />
+          {/* <GuardedRoutes>
             <GuardedRoute
               guards={[
                 (to, from, next) => {
@@ -111,7 +157,7 @@ const App: React.FC = () => {
                 element={<Route1 />}
               />
             </GuardedRoute>
-          </GuardedRoutes>
+          </GuardedRoutes> */}
         </GuardProvider>
       </GuardConfigProvider>
     </BrowserRouter>
