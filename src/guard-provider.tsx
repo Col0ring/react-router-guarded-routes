@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { GuardContext, GuardContextValue } from './internal/context'
+import { useGuardContext } from './internal/useGuardContext'
 
 export interface GuardProviderProps extends GuardContextValue {
   children: React.ReactNode
@@ -7,6 +8,19 @@ export interface GuardProviderProps extends GuardContextValue {
 
 export const GuardProvider: React.FC<GuardProviderProps> = (props) => {
   const { children, ...args } = props
+  const { guards } = useGuardContext()
 
-  return <GuardContext.Provider value={args}>{children}</GuardContext.Provider>
+  const guardContextValue = useMemo(
+    () => ({
+      ...args,
+      guards: [...(guards || []), ...(args.guards || [])],
+    }),
+    [guards, args]
+  )
+
+  return (
+    <GuardContext.Provider value={guardContextValue}>
+      {children}
+    </GuardContext.Provider>
+  )
 }

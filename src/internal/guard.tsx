@@ -16,6 +16,7 @@ import {
   FromGuardRouteOptions,
   GuardedRouteObject,
   GuardMiddleware,
+  NextFunction,
   ToGuardRouteOptions,
 } from '../type'
 import { useGuardConfigContext } from './useGuardConfigContext'
@@ -34,7 +35,9 @@ enum ResolvedStatus {
   GO = 'go',
 }
 
-type GuardedResult =
+type GuardedResult<T> = {
+  value: T
+} & (
   | {
       type: ResolvedStatus.NEXT
     }
@@ -47,17 +50,18 @@ type GuardedResult =
       type: ResolvedStatus.GO
       delta: number
     }
+)
 
 export const Guard: React.FC<GuardProps> = (props) => {
   const { children, route } = props
   const { guards: guardsProp, fallback: fallbackProp } = route
   const [validated, setValidated] = useState(false)
   const { location, enableGuards, enableFallback } = useGuardConfigContext()
-  const { guards: globalGuards, fallback } = useGuardContext()
+  const { guards: wrapperGuards, fallback } = useGuardContext()
   const navigate = useNavigate()
   const guards = useMemo(
-    () => [...(guardsProp || []), ...(globalGuards || [])],
-    [globalGuards, guardsProp]
+    () => [...(wrapperGuards || []), ...(guardsProp || [])],
+    [wrapperGuards, guardsProp]
   )
   const hasGuard = useMemo(() => guards.length !== 0, [guards.length])
 
@@ -88,41 +92,54 @@ export const Guard: React.FC<GuardProps> = (props) => {
   )
 
   const runGuard = useCallback(
-    (guard: GuardMiddleware) => {
-      return new Promise<GuardedResult>((resolve, reject) => {
+    (guard: GuardMiddleware, prevCtxValue: any) => {
+      return new Promise<GuardedResult<any>>((resolve, reject) => {
+        let ctxValue: any
+        const next: NextFunction<any> = (
+          ...args: [To, NavigateOptions?] | [number] | []
+        ) => {
+          switch (args.length) {
+            case 0:
+              resolve({
+                type: ResolvedStatus.NEXT,
+                value: ctxValue,
+              })
+              break
+            case 1:
+              if (isNumber(args[0])) {
+                resolve({
+                  type: ResolvedStatus.GO,
+                  delta: args[0],
+                  value: ctxValue,
+                })
+              } else {
+                resolve({
+                  type: ResolvedStatus.TO,
+                  to: args[0],
+                  value: ctxValue,
+                })
+              }
+              break
+            case 2:
+              resolve({
+                type: ResolvedStatus.TO,
+                to: args[0],
+                options: args[1],
+                value: ctxValue,
+              })
+              break
+          }
+        }
+        next.value = prevCtxValue
+        next.ctx = (value) => {
+          ctxValue = value
+          return next()
+        }
         try {
           const guardResult = guard(
             toGuardRouteOptions,
             fromGuardRouteOptions,
-            (...args: [To, NavigateOptions?] | [number] | []) => {
-              switch (args.length) {
-                case 0:
-                  resolve({
-                    type: ResolvedStatus.NEXT,
-                  })
-                  break
-                case 1:
-                  if (isNumber(args[0])) {
-                    resolve({
-                      type: ResolvedStatus.GO,
-                      delta: args[0],
-                    })
-                  } else {
-                    resolve({
-                      type: ResolvedStatus.TO,
-                      to: args[0],
-                    })
-                  }
-                  break
-                case 2:
-                  resolve({
-                    type: ResolvedStatus.TO,
-                    to: args[0],
-                    options: args[1],
-                  })
-                  break
-              }
-            }
+            next
           )
           if (isPromise(guardResult)) {
             guardResult.catch((error) => reject(error))
@@ -136,8 +153,10 @@ export const Guard: React.FC<GuardProps> = (props) => {
   )
 
   const runGuards = useCallback(async () => {
+    let ctxValue: any
     for (const guard of guards) {
-      const result = await runGuard(guard)
+      const result = await runGuard(guard, ctxValue)
+      ctxValue = result.value
       if (result.type === ResolvedStatus.NEXT) {
         continue
       } else if (result.type === ResolvedStatus.GO) {

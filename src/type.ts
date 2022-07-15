@@ -14,8 +14,10 @@ export interface GuardedRouteConfig {
 
 export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {}
 
-export interface NextFunction extends NavigateFunction {
+export interface NextFunction<T> extends NavigateFunction {
   (): void
+  value: T
+  ctx: (value: T) => void
 }
 
 export interface GuardedRouteMatch<ParamKey extends string = string>
@@ -35,8 +37,8 @@ export interface FromGuardRouteOptions
     [ToGuardRouteOptions['location'] | null]
   > {}
 
-export type GuardMiddleware = (
+export type GuardMiddleware<T = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
-  next: NextFunction
+  next: NextFunction<T>
 ) => Promise<void> | void

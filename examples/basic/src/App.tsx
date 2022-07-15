@@ -99,12 +99,20 @@ const App: React.FC = () => {
         </Route>
       </Routes> */}
       <GuardConfigProvider>
-        <GuardProvider fallback={<div>loading...</div>}>
-          <Routes />
-          {/* <GuardedRoutes>
+        <GuardProvider
+          fallback={<div>loading...</div>}
+          guards={[
+            (to, from, next) => {
+              next.ctx('111')
+            },
+          ]}
+        >
+          {/* <Routes /> */}
+          <GuardedRoutes>
             <GuardedRoute
               guards={[
                 (to, from, next) => {
+                  console.log(next.value)
                   next()
                 },
               ]}
@@ -138,26 +146,39 @@ const App: React.FC = () => {
                 </div>
               }
             />
-            <GuardedRoute
+            <GuardProvider
               guards={[
                 (to, from, next) => {
-                  next()
+                  console.log('ctx: ', next.value)
+                  next.ctx('ctx value')
+                  // next()
                 },
               ]}
-              path="b/*"
-              element={<Route1 />}
+              fallback={<div>loading2...</div>}
             >
               <GuardedRoute
                 guards={[
                   (to, from, next) => {
+                    console.log('ctx value2')
+                    console.log(next.value)
                     next()
                   },
                 ]}
-                path=":c"
+                path="b/*"
                 element={<Route1 />}
-              />
-            </GuardedRoute>
-          </GuardedRoutes> */}
+              >
+                <GuardedRoute
+                  guards={[
+                    (to, from, next) => {
+                      next()
+                    },
+                  ]}
+                  path=":c"
+                  element={<Route1 />}
+                />
+              </GuardedRoute>
+            </GuardProvider>
+          </GuardedRoutes>
         </GuardProvider>
       </GuardConfigProvider>
     </BrowserRouter>

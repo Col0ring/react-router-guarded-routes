@@ -145,7 +145,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <GuardConfigProvider>
-        {/* Guard all routes below. */}
         <GuardProvider fallback={<div>loading...</div>} guards={guards}>
           <GuardedRoutes>
             <GuardedRoute
@@ -173,6 +172,30 @@ export default function App() {
 }
 ```
 
+You can also call `next.ctx('ctx value')` to transfer contextual information, and get it by `next.value` in the next guard middleware. The guard middleware is executed from outside to inside, left to right.
+
+```tsx
+<GuardConfigProvider>
+  <GuardProvider
+    fallback={<div>loading...</div>}
+    guards={(to, from, next) => {
+      next.ctx('ctx value')
+    }}
+  >
+    <GuardedRoutes>
+      <GuardedRoute
+        guards={(to, from, next) => {
+          console.log(next.value) // ctx value
+          next()
+        }}
+        element={<div>foo</div>}
+        path="/foo"
+      />
+    </GuardedRoutes>
+  </GuardProvider>
+</GuardConfigProvider>
+```
+
 ## APIS
 
 ### Types
@@ -194,8 +217,10 @@ export interface GuardedRouteConfig {
 export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {}
 
 // extends the navigate function
-export interface NextFunction extends NavigateFunction {
+export interface NextFunction<T> extends NavigateFunction {
   (): void
+  value: T
+  ctx: (value: T) => void
 }
 
 export interface GuardedRouteMatch<ParamKey extends string = string>
@@ -213,10 +238,10 @@ export interface FromGuardRouteOptions {
   matches: GuardedRouteMatch[]
 }
 
-export type GuardMiddleware = (
+export type GuardMiddleware<T = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
-  next: NextFunction
+  next: NextFunction<T>
 ) => Promise<void> | void
 ```
 
@@ -329,19 +354,19 @@ Use nested GuardProvider:
   <GuardProvider fallback={<div>loading...</div>}>
     <GuardedRoutes>
       <GuardedRoute element={<div>foo</div>} path="/foo" />
-      <GuardedRoute
-        element={
-          <div>
-            bar
-            <GuardProvider fallback={<div>loading2...</div>}>
+      <GuardProvider fallback={<div>loading2...</div>}>
+        <GuardedRoute
+          element={
+            <div>
+              bar
               <Outlet />
-            </GuardProvider>
-          </div>
-        }
-        path="/bar/*"
-      >
-        <GuardedRoute element={<div>baz</div>} path="/bar/baz" />
-      </GuardedRoute>
+            </div>
+          }
+          path="/bar/*"
+        >
+          <GuardedRoute element={<div>baz</div>} path="/bar/baz" />
+        </GuardedRoute>
+      </GuardProvider>
     </GuardedRoutes>
   </GuardProvider>
 </GuardConfigProvider>

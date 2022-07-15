@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
-import { RoutesProps } from 'react-router'
+import { Outlet, RoutesProps } from 'react-router'
+import { GuardProvider } from './guard-provider'
 import { GuardedRoute } from './guarded-route'
 import { useInGuardConfigContext } from './internal/useInGuardContext'
 import { invariant } from './internal/utils'
@@ -21,6 +22,20 @@ function createGuardedRoutesFromChildren(children: React.ReactNode) {
     if (element.type === React.Fragment) {
       // Transparently support React.Fragment and its children.
       routes.push(...createGuardedRoutesFromChildren(element.props.children))
+      return
+    }
+
+    if (element.type === GuardProvider) {
+      routes.push({
+        element: React.cloneElement(
+          element,
+          {
+            ...element.props,
+          },
+          <Outlet />
+        ),
+        children: createGuardedRoutesFromChildren(element.props.children),
+      })
       return
     }
 
