@@ -95,9 +95,14 @@ export const Guard: React.FC<GuardProps> = (props) => {
     (guard: GuardMiddleware, prevCtxValue: any) => {
       return new Promise<GuardedResult<any>>((resolve, reject) => {
         let ctxValue: any
+        let called = false
         const next: NextFunction<any> = (
           ...args: [To, NavigateOptions?] | [number] | []
         ) => {
+          if (called) {
+            return
+          }
+          called = true
           switch (args.length) {
             case 0:
               resolve({
@@ -181,17 +186,24 @@ export const Guard: React.FC<GuardProps> = (props) => {
       canRunGuard.then((done) => {
         if (done) {
           validate()
+        } else {
+          setValidated(true)
         }
       })
       return
     }
     if (canRunGuard) {
       validate()
+    } else {
+      setValidated(true)
     }
   }, [runGuards, hasGuard, enableGuards, canRunGuard])
 
-  if (hasGuard && !validated && canRunFallback) {
-    return <>{fallbackProp || fallback}</>
+  if (hasGuard && !validated) {
+    if (canRunFallback) {
+      return <>{fallbackProp || fallback}</>
+    }
+    return null
   }
   return <>{children}</>
 }
