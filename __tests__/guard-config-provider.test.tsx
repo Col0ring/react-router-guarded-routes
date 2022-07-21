@@ -215,7 +215,7 @@ describe('<GuardConfigProvider />', () => {
 
         const button = renderer.root.findByType('button')
 
-        TestRenderer.act(() => {
+        await TestRenderer.act(() => {
           button.props.onClick()
         })
 

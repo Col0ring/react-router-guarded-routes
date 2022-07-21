@@ -89,7 +89,7 @@ import {
 } from 'react-router-guarded-routes'
 
 const logGuard: GuardMiddleware = (to, from, next) => {
-  console.log(to) // { location, matches }
+  console.log(to) // { location, matches, route }
   console.log(from)
   next() // call next function to show the route element
   // it accepts the same parameters as navigate (useNavigate()) and behaves consistently.
@@ -138,7 +138,22 @@ const fooGuard: GuardMiddleware = (to, from, next) => {
   next()
 }
 
-const guards = [logGuard]
+// you can use object to determine whether you need to register middleware
+const barGuard: GuardMiddleware = {
+  handler: (to, from, next) => {
+    console.log('bar')
+    next()
+  },
+  register: (to, from) => {
+    // only matched with `/bar` can be executed.å
+    if (to.location.pathname.startsWith('/bar')) {
+      return true
+    }
+    return false
+  },
+}
+
+const guards = [logGuard, barGuard]
 const fooGuards = [fooGuard]
 
 export default function App() {
@@ -238,11 +253,22 @@ export interface FromGuardRouteOptions {
   matches: GuardedRouteMatch[]
 }
 
-export type GuardMiddleware<T = any> = (
+export type GuardMiddlewareFunction<T = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
   next: NextFunction<T>
 ) => Promise<void> | void
+
+export type GuardMiddlewareObject<T = any> = {
+  handler: GuardMiddlewareFunction<T>
+  register?: (
+    to: ToGuardRouteOptions,
+    from: FromGuardRouteOptions
+  ) => Promise<boolean> | boolean
+}
+export type GuardMiddleware<T = any> =
+  | GuardMiddlewareFunction<T>
+  | GuardMiddlewareObject<T>
 ```
 
 ### Components

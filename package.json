@@ -1,6 +1,6 @@
 {
   "name": "react-router-guarded-routes",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "a guard middleware for react-router v6",
   "keywords": [
     "react",

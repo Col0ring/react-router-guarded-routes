@@ -1,4 +1,4 @@
-import { MemoryRouter, Outlet } from 'react-router'
+import { MemoryRouter, Outlet, useNavigate } from 'react-router'
 import type { ReactTestRenderer } from 'react-test-renderer'
 import TestRenderer from 'react-test-renderer'
 import {
@@ -152,6 +152,83 @@ describe('<GuardProvider />', () => {
         about
       </h1>
     `)
+  })
+
+  it('should register a guard middleware when matched a route', async () => {
+    function Home() {
+      const navigate = useNavigate()
+      return (
+        <div>
+          home
+          <button onClick={() => navigate('/about')}>Click</button>
+        </div>
+      )
+    }
+    let renderer!: ReactTestRenderer
+
+    await TestRenderer.act(async () => {
+      const routes: GuardedRouteObject[] = [
+        {
+          element: (
+            <GuardProvider
+              guards={[
+                {
+                  handler: () => {},
+                  register(to) {
+                    if (to.location.pathname === '/about') {
+                      return true
+                    }
+                    return false
+                  },
+                },
+              ]}
+              fallback={<div>loading...</div>}
+            >
+              <Outlet />
+            </GuardProvider>
+          ),
+          children: [
+            {
+              path: 'home',
+              element: <Home />,
+            },
+            {
+              path: 'about',
+              element: <h1>about</h1>,
+            },
+          ],
+        },
+      ]
+
+      await TestRenderer.act(() => {
+        renderer = TestRenderer.create(
+          <MemoryRouter initialEntries={['/home']}>
+            <RoutesRenderer routes={routes} />
+          </MemoryRouter>
+        )
+      })
+      expect(renderer.toJSON()).toMatchInlineSnapshot(`
+        <div>
+          home
+          <button
+            onClick={[Function]}
+          >
+            Click
+          </button>
+        </div>
+      `)
+    })
+    await TestRenderer.act(async () => {
+      const button = renderer.root.findByType('button')
+      await TestRenderer.act(() => {
+        button.props.onClick()
+      })
+      expect(renderer.toJSON()).toMatchInlineSnapshot(`
+    <div>
+      loading...
+    </div>
+  `)
+    })
   })
 
   it('should include all guard middleware when there are nested providers', async () => {

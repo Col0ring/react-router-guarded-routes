@@ -117,6 +117,37 @@ describe('useGuardedRoutes', () => {
           </div>
         `)
       })
+
+      it('pass an object as a middleware and provide a register handler', async () => {
+        await TestRenderer.act(async () => {
+          const routes: GuardedRouteObject[] = [
+            {
+              path: 'home',
+              element: <h1>home</h1>,
+              guards: [
+                {
+                  handler: () => {},
+                  register: () => false,
+                },
+              ],
+            },
+          ]
+
+          let renderer!: ReactTestRenderer
+          await TestRenderer.act(() => {
+            renderer = TestRenderer.create(
+              <MemoryRouter initialEntries={['/home']}>
+                <RoutesRenderer routes={routes} />
+              </MemoryRouter>
+            )
+          })
+          expect(renderer.toJSON()).toMatchInlineSnapshot(`
+            <h1>
+              home
+            </h1>
+          `)
+        })
+      })
     })
 
     describe('when a guard has called the `next()` function', () => {

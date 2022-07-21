@@ -15,14 +15,14 @@ import {
 import {
   FromGuardRouteOptions,
   GuardedRouteObject,
-  GuardMiddleware,
+  GuardMiddlewareFunction,
   NextFunction,
   ToGuardRouteOptions,
 } from '../type'
 import { useGuardConfigContext } from './useGuardConfigContext'
 import { useGuardContext } from './useGuardContext'
 import { usePrevious } from './usePrevious'
-import { isNumber, isPromise } from './utils'
+import { isFunction, isNumber, isPromise } from './utils'
 
 export interface GuardProps {
   route: GuardedRouteObject
@@ -71,6 +71,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
     () => ({
       location: location.to as Location,
       matches,
+      route: matches[matches.length - 1]?.route,
     }),
     [location.to, matches]
   )
@@ -78,6 +79,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
     () => ({
       location: location.from,
       matches: prevMatches || [],
+      route: prevMatches ? prevMatches[prevMatches.length - 1]?.route : null,
     }),
     [location.from, prevMatches]
   )
@@ -92,7 +94,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
   )
 
   const runGuard = useCallback(
-    (guard: GuardMiddleware, prevCtxValue: any) => {
+    (guard: GuardMiddlewareFunction, prevCtxValue: any) => {
       return new Promise<GuardedResult<any>>((resolve, reject) => {
         let ctxValue: any
         let called = false
@@ -140,15 +142,11 @@ export const Guard: React.FC<GuardProps> = (props) => {
           ctxValue = value
           return next()
         }
+        async function handleGuard() {
+          await guard(toGuardRouteOptions, fromGuardRouteOptions, next)
+        }
         try {
-          const guardResult = guard(
-            toGuardRouteOptions,
-            fromGuardRouteOptions,
-            next
-          )
-          if (isPromise(guardResult)) {
-            guardResult.catch((error) => reject(error))
-          }
+          handleGuard()
         } catch (error) {
           reject(error)
         }
@@ -160,7 +158,23 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const runGuards = useCallback(async () => {
     let ctxValue: any
     for (const guard of guards) {
-      const result = await runGuard(guard, ctxValue)
+      let registered = true
+      let guardHandle: GuardMiddlewareFunction
+      if (isFunction(guard)) {
+        guardHandle = guard
+      } else {
+        guardHandle = guard.handler
+        if (guard.register) {
+          registered = await guard.register(
+            toGuardRouteOptions,
+            fromGuardRouteOptions
+          )
+        }
+      }
+      if (!registered) {
+        continue
+      }
+      const result = await runGuard(guardHandle, ctxValue)
       ctxValue = result.value
       if (result.type === ResolvedStatus.NEXT) {
         continue
@@ -173,7 +187,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
       }
     }
     setValidated(true)
-  }, [guards, navigate, runGuard])
+  }, [fromGuardRouteOptions, guards, navigate, runGuard, toGuardRouteOptions])
 
   useEffect(() => {
     function validate() {

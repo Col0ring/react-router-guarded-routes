@@ -30,17 +30,32 @@ export interface GuardedRouteMatch<ParamKey extends string = string>
 export interface ToGuardRouteOptions {
   location: Location
   matches: GuardedRouteMatch[]
+  route: GuardedRouteObject
 }
 
 export interface FromGuardRouteOptions
   extends ReplacePick<
     ToGuardRouteOptions,
-    ['location'],
-    [ToGuardRouteOptions['location'] | null]
+    ['location', 'route'],
+    [
+      ToGuardRouteOptions['location'] | null,
+      ToGuardRouteOptions['route'] | null
+    ]
   > {}
 
-export type GuardMiddleware<T = any> = (
+export type GuardMiddlewareFunction<T = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
   next: NextFunction<T>
 ) => Promise<void> | void
+
+export type GuardMiddlewareObject<T = any> = {
+  handler: GuardMiddlewareFunction<T>
+  register?: (
+    to: ToGuardRouteOptions,
+    from: FromGuardRouteOptions
+  ) => Promise<boolean> | boolean
+}
+export type GuardMiddleware<T = any> =
+  | GuardMiddlewareFunction<T>
+  | GuardMiddlewareObject<T>
