@@ -1,18 +1,26 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   GuardedRoute,
   GuardedRoutes,
   GuardProvider,
 } from 'react-router-guarded-routes'
-// use hooks in inject function
-function useInject() {
-  return useState(0)
-}
+import { useAuth } from './store'
+
 const Home: React.FC = () => {
+  const { methods } = useAuth()
+  const navigate = useNavigate()
   return (
     <div>
       <h1>Home</h1>
+      <button onClick={() => navigate('/login')}>to login</button>
+      <button
+        onClick={() => {
+          methods.logout()
+        }}
+      >
+        logout
+      </button>
       <div
         style={{
           display: 'flex',
@@ -28,18 +36,14 @@ const Home: React.FC = () => {
       <GuardedRoutes>
         <GuardProvider
           fallback={<div>loading home...</div>}
-          inject={useInject}
           guards={[
-            (to, from, next, { injectValue }) => {
-              console.log(injectValue)
+            (to, from, next) => {
               if (to.location.pathname.includes('ban')) {
                 setTimeout(() => {
                   next(-1)
                 }, 2000)
               } else {
-                setTimeout(() => {
-                  next()
-                }, 500)
+                next()
               }
             },
           ]}

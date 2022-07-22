@@ -43,19 +43,24 @@ export interface FromGuardRouteOptions
     ]
   > {}
 
-export type GuardMiddlewareFunction<T = any> = (
+export interface ExternalOptions<I> {
+  injectValue: I
+}
+
+export type GuardMiddlewareFunction<T = any, I = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
-  next: NextFunction<T>
+  next: NextFunction<T>,
+  externalOptions: ExternalOptions<I>
 ) => Promise<void> | void
 
-export type GuardMiddlewareObject<T = any> = {
-  handler: GuardMiddlewareFunction<T>
+export type GuardMiddlewareObject<T = any, I = any> = {
+  handler: GuardMiddlewareFunction<T, I>
   register?: (
     to: ToGuardRouteOptions,
     from: FromGuardRouteOptions
   ) => Promise<boolean> | boolean
 }
-export type GuardMiddleware<T = any> =
-  | GuardMiddlewareFunction<T>
-  | GuardMiddlewareObject<T>
+export type GuardMiddleware<T = any, I = any> =
+  | GuardMiddlewareFunction<T, I>
+  | GuardMiddlewareObject<T, I>

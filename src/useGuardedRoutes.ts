@@ -8,8 +8,8 @@ type LocationArg = Parameters<typeof useRoutes>[1]
 function transformGuardedRoutes(
   guardedRoutes: GuardedRouteObject[]
 ): RouteObject[] {
-  return guardedRoutes.map((guardedRoute) => {
-    const { element, children } = guardedRoute
+  return guardedRoutes.map((guardedRoute, i) => {
+    const { element, path, children } = guardedRoute
     return {
       ...guardedRoute,
       element:
@@ -17,6 +17,7 @@ function transformGuardedRoutes(
           ? React.createElement(
               Guard,
               {
+                key: path || i,
                 route: guardedRoute,
               },
               element

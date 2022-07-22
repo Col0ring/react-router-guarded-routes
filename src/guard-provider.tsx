@@ -8,14 +8,20 @@ export interface GuardProviderProps extends GuardContextValue {
 
 export const GuardProvider: React.FC<GuardProviderProps> = (props) => {
   const { children, ...args } = props
-  const { guards } = useGuardContext()
+  const { guards, inject } = useGuardContext()
 
-  const guardContextValue = useMemo(
+  const guardContextValue: GuardContextValue = useMemo(
     () => ({
       ...args,
+      inject: (to, from) => {
+        return {
+          ...inject?.(to, from),
+          ...args.inject?.(to, from),
+        }
+      },
       guards: [...(guards || []), ...(args.guards || [])],
     }),
-    [guards, args]
+    [args, guards, inject]
   )
 
   return (

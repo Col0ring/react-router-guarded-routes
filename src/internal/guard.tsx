@@ -23,7 +23,7 @@ import {
 import { useGuardConfigContext } from './useGuardConfigContext'
 import { useGuardContext } from './useGuardContext'
 import { usePrevious } from './usePrevious'
-import { isFunction, isNumber, isPromise, isUndefined } from './utils'
+import { isFunction, isNumber, isPromise, isUndefined, noop } from './utils'
 
 export interface GuardProps {
   route: GuardedRouteObject
@@ -59,7 +59,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const [validated, setValidated] = useState(false)
   const validatingRef = useRef(false)
   const { location, enableGuards, enableFallback } = useGuardConfigContext()
-  const { guards: wrapperGuards, fallback } = useGuardContext()
+  const { guards: wrapperGuards, fallback, inject = noop } = useGuardContext()
   const navigate = useNavigate()
   const guards = useMemo(
     () => [...(wrapperGuards || []), ...(guardsProp || [])],
@@ -85,6 +85,8 @@ export const Guard: React.FC<GuardProps> = (props) => {
     }),
     [location.from, prevMatches]
   )
+  const injectValue = inject(toGuardRouteOptions, fromGuardRouteOptions)
+
   const canRunGuard = useMemo(
     () => enableGuards(toGuardRouteOptions, fromGuardRouteOptions),
     [enableGuards, fromGuardRouteOptions, toGuardRouteOptions]
@@ -145,7 +147,9 @@ export const Guard: React.FC<GuardProps> = (props) => {
           return next()
         }
         async function handleGuard() {
-          await guard(toGuardRouteOptions, fromGuardRouteOptions, next)
+          await guard(toGuardRouteOptions, fromGuardRouteOptions, next, {
+            injectValue,
+          })
         }
         try {
           handleGuard()
@@ -154,7 +158,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
         }
       })
     },
-    [fromGuardRouteOptions, toGuardRouteOptions]
+    [fromGuardRouteOptions, injectValue, toGuardRouteOptions]
   )
 
   const runGuards = useCallback(async () => {
@@ -197,8 +201,9 @@ export const Guard: React.FC<GuardProps> = (props) => {
   }, [fallback, fallbackProp])
 
   useEffect(() => {
+    setValidated(false)
     async function validate() {
-      // validating lock for strict mode
+      // validating lock for strict mode.
       if (hasGuard && !validatingRef.current) {
         validatingRef.current = true
         await runGuards()
@@ -220,7 +225,9 @@ export const Guard: React.FC<GuardProps> = (props) => {
     } else {
       setValidated(true)
     }
-  }, [runGuards, hasGuard, enableGuards, canRunGuard, validated])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.to])
+
   if (hasGuard && !validated) {
     if (canRunFallback) {
       return <>{fallbackElement}</>
