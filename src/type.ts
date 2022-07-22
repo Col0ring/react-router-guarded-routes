@@ -44,7 +44,7 @@ export interface FromGuardRouteOptions
   > {}
 
 export interface ExternalOptions<I> {
-  injectValue: I
+  injectedValue: I
 }
 
 export type GuardMiddlewareFunction<T = any, I = any> = (

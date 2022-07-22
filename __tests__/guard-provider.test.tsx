@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react'
 import { MemoryRouter, Outlet, useNavigate } from 'react-router'
 import type { ReactTestRenderer } from 'react-test-renderer'
 import TestRenderer from 'react-test-renderer'
@@ -152,6 +153,49 @@ describe('<GuardProvider />', () => {
         about
       </h1>
     `)
+  })
+
+  it('show get the injected value', async () => {
+    const state = {
+      isLogin: false,
+    }
+    const AuthContext = createContext(state)
+    function useAuth() {
+      return useContext(AuthContext)
+    }
+    await TestRenderer.act(async () => {
+      const routes: GuardedRouteObject[] = [
+        {
+          element: (
+            <GuardProvider
+              guards={[
+                (to, from, next, { injectedValue }) => {
+                  // eslint-disable-next-line no-console
+                  console.log(JSON.stringify(injectedValue))
+                  next()
+                },
+              ]}
+              fallback={<div>loading...</div>}
+              inject={useAuth}
+            >
+              <Outlet />
+            </GuardProvider>
+          ),
+          children: [{ path: 'home', element: <h1>home</h1>, guards: [noop] }],
+        },
+      ]
+
+      await TestRenderer.act(() => {
+        TestRenderer.create(
+          <MemoryRouter initialEntries={['/home']}>
+            <RoutesRenderer routes={routes} />
+          </MemoryRouter>
+        )
+      })
+      expect(consoleLog).toHaveBeenCalledWith(
+        expect.stringContaining(JSON.stringify(state))
+      )
+    })
   })
 
   it('should register a guard middleware when matched a route', async () => {

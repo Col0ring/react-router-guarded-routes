@@ -222,6 +222,7 @@ import {
   RouteMatch,
   RouteObject,
 } from 'react-router'
+import { ReplacePick } from 'types-kit'
 
 export interface GuardedRouteConfig {
   guards?: GuardMiddleware[]
@@ -229,9 +230,10 @@ export interface GuardedRouteConfig {
   [props: PropertyKey]: any
 }
 
-export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {}
+export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {
+  children?: GuardedRouteObject[]
+}
 
-// extends the navigate function
 export interface NextFunction<T> extends NavigateFunction {
   (): void
   value: T
@@ -246,29 +248,40 @@ export interface GuardedRouteMatch<ParamKey extends string = string>
 export interface ToGuardRouteOptions {
   location: Location
   matches: GuardedRouteMatch[]
+  route: GuardedRouteObject
 }
 
-export interface FromGuardRouteOptions {
-  location: Location | null
-  matches: GuardedRouteMatch[]
+export interface FromGuardRouteOptions
+  extends ReplacePick<
+    ToGuardRouteOptions,
+    ['location', 'route'],
+    [
+      ToGuardRouteOptions['location'] | null,
+      ToGuardRouteOptions['route'] | null
+    ]
+  > {}
+
+export interface ExternalOptions<I> {
+  injectValue: I
 }
 
-export type GuardMiddlewareFunction<T = any> = (
+export type GuardMiddlewareFunction<T = any, I = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
-  next: NextFunction<T>
+  next: NextFunction<T>,
+  externalOptions: ExternalOptions<I>
 ) => Promise<void> | void
 
-export type GuardMiddlewareObject<T = any> = {
-  handler: GuardMiddlewareFunction<T>
+export type GuardMiddlewareObject<T = any, I = any> = {
+  handler: GuardMiddlewareFunction<T, I>
   register?: (
     to: ToGuardRouteOptions,
     from: FromGuardRouteOptions
   ) => Promise<boolean> | boolean
 }
-export type GuardMiddleware<T = any> =
-  | GuardMiddlewareFunction<T>
-  | GuardMiddlewareObject<T>
+export type GuardMiddleware<T = any, I = any> =
+  | GuardMiddlewareFunction<T, I>
+  | GuardMiddlewareObject<T, I>
 ```
 
 ### Components
@@ -331,15 +344,20 @@ import React from 'react'
 
 export interface GuardProviderProps {
   fallback?: React.ReactElement
+  inject?: (
+    to: ToGuardRouteOptions,
+    from: FromGuardRouteOptions
+  ) => Record<string, any>
   guards?: GuardedRouteConfig['guards']
   children: React.ReactNode
 }
 ```
 
-| Prop       | Optional | Default | Description                                                           |
-| ---------- | :------: | :-----: | --------------------------------------------------------------------- |
-| `fallback` |   Yes    |         | a fallback element to show when a `GuardedRoute` run guard middleware |
-| `guards`   |   Yes    |         | the guards to set for routes inside the `GuardProvider`               |
+| Prop       | Optional | Default | Description                                                                                                                                |
+| ---------- | :------: | :-----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fallback` |   Yes    |         | a fallback element to show when a `GuardedRoute` run guard middleware                                                                      |
+| `inject`   |   Yes    |  `{}`   | an injected value (React hooks can be used) for guard middleware to use, will be automatically merged the values of nested `GuardProvider` |
+| `guards`   |   Yes    |         | the guards to set for routes inside the `GuardProvider`                                                                                    |
 
 ##### Setup
 
@@ -396,6 +414,52 @@ Use nested GuardProvider:
     </GuardedRoutes>
   </GuardProvider>
 </GuardConfigProvider>
+```
+
+Inject value:
+
+```tsx
+import { createContext } from 'react'
+import { BrowserRouter } from 'react-router-dom'
+import {
+  GuardConfigProvider,
+  GuardedRoute,
+  GuardedRoutes,
+  GuardProvider,
+} from 'react-router-guarded-routes'
+
+export const AuthContext = createContext({
+  isLogin: false,
+})
+
+export function useAuth() {
+  return useContext(AuthContext)
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthContext>
+        <GuardConfigProvider>
+          <GuardProvider
+            fallback={<div>loading...</div>}
+            inject={useAuth}
+            guards={[
+              (to, from, next, { injectedValue }) => {
+                console.log(injectedValue) // { isLogin: false }
+                next()
+              },
+            ]}
+          >
+            <GuardedRoutes>
+              <GuardedRoute element={<div>foo</div>} path="/foo" />
+            </GuardedRoutes>
+          </GuardProvider>
+        </GuardConfigProvider>
+      </AuthContext>
+    </BrowserRouter>
+  )
+}
 ```
 
 #### GuardedRoutes

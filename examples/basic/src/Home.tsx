@@ -30,8 +30,8 @@ const Home: React.FC = () => {
           fallback={<div>loading home...</div>}
           inject={useInject}
           guards={[
-            (to, from, next, { injectValue }) => {
-              console.log(injectValue)
+            (to, from, next, { injectedValue }) => {
+              console.log(injectedValue)
               if (to.location.pathname.includes('ban')) {
                 setTimeout(() => {
                   next(-1)

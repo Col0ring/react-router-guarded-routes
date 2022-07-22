@@ -13,15 +13,15 @@ const authGuard: GuardMiddleware<any, AuthContextValue> = (
   to,
   from,
   next,
-  { injectValue }
+  { injectedValue }
 ) => {
-  if (to.location.pathname !== '/login' && !injectValue.state.isLogin) {
+  if (to.location.pathname !== '/login' && !injectedValue.state.isLogin) {
     next('/login', {
       replace: true,
     })
     return
   }
-  if (to.location.pathname === '/login' && injectValue.state.isLogin) {
+  if (to.location.pathname === '/login' && injectedValue.state.isLogin) {
     next('/home', {
       replace: true,
     })

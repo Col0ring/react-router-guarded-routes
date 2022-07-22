@@ -85,7 +85,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
     }),
     [location.from, prevMatches]
   )
-  const injectValue = inject(toGuardRouteOptions, fromGuardRouteOptions)
+  const injectedValue = inject(toGuardRouteOptions, fromGuardRouteOptions)
 
   const canRunGuard = useMemo(
     () => enableGuards(toGuardRouteOptions, fromGuardRouteOptions),
@@ -148,7 +148,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
         }
         async function handleGuard() {
           await guard(toGuardRouteOptions, fromGuardRouteOptions, next, {
-            injectValue,
+            injectedValue,
           })
         }
         try {
@@ -158,7 +158,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
         }
       })
     },
-    [fromGuardRouteOptions, injectValue, toGuardRouteOptions]
+    [fromGuardRouteOptions, injectedValue, toGuardRouteOptions]
   )
 
   const runGuards = useCallback(async () => {
@@ -201,7 +201,6 @@ export const Guard: React.FC<GuardProps> = (props) => {
   }, [fallback, fallbackProp])
 
   useEffect(() => {
-    setValidated(false)
     async function validate() {
       // validating lock for strict mode.
       if (hasGuard && !validatingRef.current) {
