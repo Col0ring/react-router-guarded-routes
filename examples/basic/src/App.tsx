@@ -1,184 +1,37 @@
 import React from 'react'
-import { BrowserRouter, Link, Outlet } from 'react-router-dom'
+import { BrowserRouter, Link } from 'react-router-dom'
 import {
   GuardConfigProvider,
-  GuardedRoute,
-  GuardedRouteObject,
-  GuardedRoutes,
+  GuardMiddleware,
   GuardProvider,
   useGuardedRoutes,
 } from 'react-router-guarded-routes'
-import Route1 from './route1'
-
-const routes: GuardedRouteObject[] = [
-  {
-    path: '/',
-    element: <div>111</div>,
-    guards: [
-      (to, from, next) => {
-        next()
-      },
-    ],
-  },
-  {
-    path: '/a/*',
-    fallback: <div>loading inside...</div>,
-    guards: [
-      (to, from, next) => {
-        console.log(to)
-        next()
-      },
-    ],
-    element: (
-      <div>
-        22
-        <GuardedRoutes>
-          <GuardedRoute
-            guards={[
-              (to, from, next) => {
-                next()
-              },
-            ]}
-            path=":c"
-            element={<div>ccc</div>}
-          />
-        </GuardedRoutes>
-        <Outlet />
-      </div>
-    ),
-  },
-  {
-    path: '/b/*',
-    element: <Route1 />,
-    children: [
-      {
-        path: ':c',
-        element: <Route1 />,
-      },
-    ],
-  },
-]
-
-function Routes() {
+import { routes } from './routes'
+const logGuard: GuardMiddleware = (to, from, next) => {
+  console.log('to: ', to)
+  console.log('from: ', from)
+  next()
+}
+const Routes: React.FC = () => {
   return <>{useGuardedRoutes(routes)}</>
 }
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Link to="/" style={{ marginRight: 10 }}>
-        /
-      </Link>
-      <Link to="/a/c" style={{ marginRight: 10 }}>
-        /a/c
-      </Link>
-      <Link to="/a/b" style={{ marginRight: 10 }}>
-        /a/b
-      </Link>
-      <Link to="/a/b" style={{ marginRight: 10 }}>
-        /a/b
-      </Link>
-      <Link to="/b/c" style={{ marginRight: 10 }}>
-        /b/c
-      </Link>
-      {/* <Routes>
-        <Route path="/" element={<div>111</div>} />
-        <Route path="/" element={<div>111</div>} />
-        <Route
-          path="/a/*"
-          element={
-            <div>
-              22
-              <Routes>
-                <Route path="c" element={<div>ccc</div>} />
-              </Routes>
-              <Outlet />
-            </div>
-          }
-        >
-          <Route path="b" element={<Route1 />} />
-        </Route>
-      </Routes> */}
       <GuardConfigProvider>
-        <GuardProvider
-          fallback={<div>loading...</div>}
-          guards={[
-            (to, from, next) => {
-              next.ctx('111')
-            },
-          ]}
-        >
-          {/* <Routes /> */}
-          <GuardedRoutes>
-            <GuardedRoute
-              guards={[
-                (to, from, next) => {
-                  console.log(next.value)
-                  next()
-                },
-              ]}
-              path="/"
-              element={<div>111</div>}
-            />
-            <GuardedRoute
-              path="/a/*"
-              fallback={<div>loading inside...</div>}
-              guards={[
-                (to, from, next) => {
-                  console.log(to)
-                  next()
-                },
-              ]}
-              element={
-                <div>
-                  22
-                  <GuardedRoutes>
-                    <GuardedRoute
-                      guards={[
-                        (to, from, next) => {
-                          next()
-                        },
-                      ]}
-                      path=":c"
-                      element={<div>ccc</div>}
-                    />
-                  </GuardedRoutes>
-                  <Outlet />
-                </div>
-              }
-            />
-            <GuardProvider
-              guards={[
-                (to, from, next) => {
-                  console.log('ctx: ', next.value)
-                  next.ctx('ctx value')
-                  // next()
-                },
-              ]}
-              fallback={<div>loading2...</div>}
-            >
-              <GuardedRoute
-                guards={[
-                  (to, from, next) => {
-                    console.log('ctx value2')
-                    console.log(next.value)
-                    next()
-                  },
-                ]}
-                path="b/*"
-                element={<Route1 />}
-              >
-                <GuardedRoute
-                  guards={[
-                    (to, from, next) => {
-                      next()
-                    },
-                  ]}
-                  path=":c"
-                  element={<Route1 />}
-                />
-              </GuardedRoute>
-            </GuardProvider>
-          </GuardedRoutes>
+        <GuardProvider fallback={<div>loading...</div>} guards={[logGuard]}>
+          <div
+            style={{
+              display: 'flex',
+              width: 200,
+              margin: '0 auto',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Link to="/home">Home</Link>
+            <Link to="/about">About</Link>
+          </div>
+          <Routes />
         </GuardProvider>
       </GuardConfigProvider>
     </BrowserRouter>
