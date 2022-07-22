@@ -17,6 +17,10 @@ export function isNumber(value: any): value is number {
   return typeof value === 'number'
 }
 
+export function isUndefined(value: any): value is undefined {
+  return typeof value === 'undefined'
+}
+
 export function isFunction(value: any): value is (...args: any[]) => any {
   return typeof value === 'function'
 }

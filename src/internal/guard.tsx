@@ -3,6 +3,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
@@ -22,7 +23,7 @@ import {
 import { useGuardConfigContext } from './useGuardConfigContext'
 import { useGuardContext } from './useGuardContext'
 import { usePrevious } from './usePrevious'
-import { isFunction, isNumber, isPromise } from './utils'
+import { isFunction, isNumber, isPromise, isUndefined } from './utils'
 
 export interface GuardProps {
   route: GuardedRouteObject
@@ -56,6 +57,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const { children, route } = props
   const { guards: guardsProp, fallback: fallbackProp } = route
   const [validated, setValidated] = useState(false)
+  const validatingRef = useRef(false)
   const { location, enableGuards, enableFallback } = useGuardConfigContext()
   const { guards: wrapperGuards, fallback } = useGuardContext()
   const navigate = useNavigate()
@@ -156,6 +158,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
   )
 
   const runGuards = useCallback(async () => {
+    setValidated(false)
     let ctxValue: any
     for (const guard of guards) {
       let registered = true
@@ -189,11 +192,17 @@ export const Guard: React.FC<GuardProps> = (props) => {
     setValidated(true)
   }, [fromGuardRouteOptions, guards, navigate, runGuard, toGuardRouteOptions])
 
+  const fallbackElement = useMemo(() => {
+    return !isUndefined(fallbackProp) ? fallbackProp : fallback
+  }, [fallback, fallbackProp])
+
   useEffect(() => {
-    function validate() {
-      setValidated(false)
-      if (hasGuard) {
-        runGuards()
+    async function validate() {
+      // validating lock for strict mode
+      if (hasGuard && !validatingRef.current) {
+        validatingRef.current = true
+        await runGuards()
+        validatingRef.current = false
       }
     }
     if (isPromise(canRunGuard)) {
@@ -211,11 +220,10 @@ export const Guard: React.FC<GuardProps> = (props) => {
     } else {
       setValidated(true)
     }
-  }, [runGuards, hasGuard, enableGuards, canRunGuard])
-
+  }, [runGuards, hasGuard, enableGuards, canRunGuard, validated])
   if (hasGuard && !validated) {
     if (canRunFallback) {
-      return <>{fallbackProp || fallback}</>
+      return <>{fallbackElement}</>
     }
     return null
   }
