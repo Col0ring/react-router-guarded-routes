@@ -263,7 +263,7 @@ describe('<GuardProvider />', () => {
               path: 'home',
               element: <h1>home</h1>,
               guards: [
-                (to, from, next, { ctxValue }) => {
+                () => {
                   console.log('home guard')
                 },
               ],

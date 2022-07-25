@@ -1,6 +1,6 @@
 {
   "name": "react-router-guarded-routes",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "a guard middleware for react-router v6",
   "keywords": [
     "react",
@@ -34,7 +34,7 @@
     "types-kit": "^0.0.8"
   },
   "devDependencies": {
-    "@col0ring/eslint-config": "^0.0.8",
+    "@col0ring/eslint-config": "^0.0.12",
     "@col0ring/prettier-config": "^0.0.2",
     "@col0ring/stylelint-config": "^0.0.8",
     "@commitlint/cli": "^17.0.3",
