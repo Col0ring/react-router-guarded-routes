@@ -2,6 +2,30 @@
 
 A guard middleware for react-router v6, inspired by [`react-router-guards`](https://github.com/Upstatement/react-router-guards).
 
+- [Install](#install)
+- [Usage](#usage)
+  - [Basic](#basic)
+  - [Guarding](#guarding)
+- [API](#api)
+  - [Types](#types)
+  - [Components](#components)
+    - [GuardConfigProvider](#guardconfigprovider)
+      - [Props](#props)
+      - [Setup](#setup)
+    - [GuardProvider](#guardprovider)
+      - [Props](#props-1)
+      - [Setup](#setup-1)
+    - [GuardedRoutes](#guardedroutes)
+      - [Props](#props-2)
+      - [Setup](#setup-2)
+    - [GuardedRoute](#guardedroute)
+      - [Props](#props-3)
+      - [Setup](#setup-3)
+  - [Hooks](#hooks)
+    - [useGuardedRoutes](#useguardedroutes)
+      - [Props](#props-4)
+      - [Setup](#setup-4)
+
 ## Install
 
 ```sh
@@ -239,7 +263,7 @@ And call `next.end()` to ignore remaining middleware.
 </GuardConfigProvider>
 ```
 
-## APIS
+## API
 
 ### Types
 
