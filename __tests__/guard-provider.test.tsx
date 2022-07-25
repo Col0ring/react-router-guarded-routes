@@ -198,6 +198,96 @@ describe('<GuardProvider />', () => {
     })
   })
 
+  it('should get the ctx value', async () => {
+    await TestRenderer.act(async () => {
+      const routes: GuardedRouteObject[] = [
+        {
+          element: (
+            <GuardProvider
+              guards={[
+                (to, from, next) => {
+                  next.ctx('ctx value')
+                },
+              ]}
+              fallback={<div>loading...</div>}
+            >
+              <Outlet />
+            </GuardProvider>
+          ),
+          children: [
+            {
+              path: 'home',
+              element: <h1>home</h1>,
+              guards: [
+                (to, from, next, { ctxValue }) => {
+                  console.log(ctxValue)
+                  next()
+                },
+              ],
+            },
+          ],
+        },
+      ]
+
+      await TestRenderer.act(() => {
+        TestRenderer.create(
+          <MemoryRouter initialEntries={['/home']}>
+            <RoutesRenderer routes={routes} />
+          </MemoryRouter>
+        )
+      })
+      expect(consoleLog).toHaveBeenCalledWith(
+        expect.stringContaining('ctx value')
+      )
+    })
+  })
+
+  it('should ignore remaining middleware if `next.end()` is called', async () => {
+    await TestRenderer.act(async () => {
+      const routes: GuardedRouteObject[] = [
+        {
+          element: (
+            <GuardProvider
+              guards={[
+                (to, from, next) => {
+                  next.end()
+                },
+              ]}
+              fallback={<div>loading...</div>}
+            >
+              <Outlet />
+            </GuardProvider>
+          ),
+          children: [
+            {
+              path: 'home',
+              element: <h1>home</h1>,
+              guards: [
+                (to, from, next, { ctxValue }) => {
+                  console.log('home guard')
+                },
+              ],
+            },
+          ],
+        },
+      ]
+      let renderer!: ReactTestRenderer
+      await TestRenderer.act(() => {
+        renderer = TestRenderer.create(
+          <MemoryRouter initialEntries={['/home']}>
+            <RoutesRenderer routes={routes} />
+          </MemoryRouter>
+        )
+      })
+      expect(consoleLog).not.toHaveBeenCalled()
+      expect(renderer.toJSON()).toMatchInlineSnapshot(`
+        <h1>
+          home
+        </h1>
+      `)
+    })
+  })
+
   it('should register a guard middleware when matched a route', async () => {
     function Home() {
       const navigate = useNavigate()
@@ -268,10 +358,10 @@ describe('<GuardProvider />', () => {
         button.props.onClick()
       })
       expect(renderer.toJSON()).toMatchInlineSnapshot(`
-    <div>
-      loading...
-    </div>
-  `)
+            <div>
+              loading...
+            </div>
+        `)
     })
   })
 

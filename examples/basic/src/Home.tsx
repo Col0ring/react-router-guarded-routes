@@ -42,6 +42,14 @@ const Home: React.FC = () => {
                 }, 500)
               }
             },
+            (to, from, next) => {
+              console.log('`next.end()` is called')
+              next.end()
+            },
+            (to, from, next) => {
+              console.log('will not be called')
+              next()
+            },
           ]}
         >
           <GuardedRoute path="foo" element={<h2>foo</h2>} />

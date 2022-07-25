@@ -34,24 +34,29 @@ enum ResolvedStatus {
   NEXT = 'next',
   TO = 'to',
   GO = 'go',
+  End = 'end',
 }
 
-type GuardedResult<T> = {
-  value: T
-} & (
+type GuardedResult<T> =
+  | ({
+      value: T
+    } & (
+      | {
+          type: ResolvedStatus.NEXT
+        }
+      | {
+          type: ResolvedStatus.TO
+          to: To
+          options?: NavigateOptions
+        }
+      | {
+          type: ResolvedStatus.GO
+          delta: number
+        }
+    ))
   | {
-      type: ResolvedStatus.NEXT
+      type: ResolvedStatus.End
     }
-  | {
-      type: ResolvedStatus.TO
-      to: To
-      options?: NavigateOptions
-    }
-  | {
-      type: ResolvedStatus.GO
-      delta: number
-    }
-)
 
 export const Guard: React.FC<GuardProps> = (props) => {
   const { children, route } = props
@@ -141,14 +146,19 @@ export const Guard: React.FC<GuardProps> = (props) => {
               break
           }
         }
-        next.value = prevCtxValue
         next.ctx = (value) => {
           ctxValue = value
           return next()
         }
+        next.end = () => {
+          resolve({
+            type: ResolvedStatus.End,
+          })
+        }
         async function handleGuard() {
           await guard(toGuardRouteOptions, fromGuardRouteOptions, next, {
             injectedValue,
+            ctxValue: prevCtxValue,
           })
         }
         try {
@@ -182,6 +192,9 @@ export const Guard: React.FC<GuardProps> = (props) => {
         continue
       }
       const result = await runGuard(guardHandle, ctxValue)
+      if (result.type === ResolvedStatus.End) {
+        break
+      }
       ctxValue = result.value
       if (result.type === ResolvedStatus.NEXT) {
         continue

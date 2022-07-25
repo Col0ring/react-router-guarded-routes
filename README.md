@@ -187,7 +187,7 @@ export default function App() {
 }
 ```
 
-You can also call `next.ctx('ctx value')` to transfer contextual information, and get it by `next.value` in the next guard middleware. The guard middleware is executed from outside to inside, left to right.
+You can also call `next.ctx('ctx value')` to transfer contextual information, and get it by `ctxValue` in the next guard middleware. The guard middleware is executed from outside to inside, left to right.
 
 ```tsx
 <GuardConfigProvider>
@@ -199,9 +199,37 @@ You can also call `next.ctx('ctx value')` to transfer contextual information, an
   >
     <GuardedRoutes>
       <GuardedRoute
-        guards={(to, from, next) => {
-          console.log(next.value) // ctx value
+        guards={(to, from, next, { ctxValue }) => {
+          console.log(ctxValue) // ctx value
           next()
+        }}
+        element={<div>foo</div>}
+        path="/foo"
+      />
+    </GuardedRoutes>
+  </GuardProvider>
+</GuardConfigProvider>
+```
+
+And call `next.end()` to ignore remaining middleware.
+
+```tsx
+<GuardConfigProvider>
+  <GuardProvider
+    fallback={<div>loading...</div>}
+    guards={
+      ((to, from, next) => {
+        next.end()
+      },
+      () => {
+        console.log('will not be called')
+      })
+    }
+  >
+    <GuardedRoutes>
+      <GuardedRoute
+        guards={() => {
+          console.log('will not be called')
         }}
         element={<div>foo</div>}
         path="/foo"
@@ -236,8 +264,8 @@ export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {
 
 export interface NextFunction<T> extends NavigateFunction {
   (): void
-  value: T
   ctx: (value: T) => void
+  end: () => void
 }
 
 export interface GuardedRouteMatch<ParamKey extends string = string>
@@ -261,15 +289,16 @@ export interface FromGuardRouteOptions
     ]
   > {}
 
-export interface ExternalOptions<I> {
-  injectValue: I
+export interface ExternalOptions<T, I> {
+  ctxValue: T
+  injectedValue: I
 }
 
 export type GuardMiddlewareFunction<T = any, I = any> = (
   to: ToGuardRouteOptions,
   from: FromGuardRouteOptions,
   next: NextFunction<T>,
-  externalOptions: ExternalOptions<I>
+  externalOptions: ExternalOptions<T, I>
 ) => Promise<void> | void
 
 export type GuardMiddlewareObject<T = any, I = any> = {
