@@ -1,12 +1,20 @@
 {
   "name": "react-router-guarded-routes",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "a guard middleware for react-router v6",
   "keywords": [
     "react",
     "router",
     "guard"
   ],
+  "homepage": "https://github.com/Col0ring/react-router-guarded-routes",
+  "bugs": {
+    "url": "https://github.com/Col0ring/react-router-guarded-routes/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Col0ring/react-router-guarded-routes.git"
+  },
   "license": "MIT",
   "author": {
     "name": "Col0ring",
