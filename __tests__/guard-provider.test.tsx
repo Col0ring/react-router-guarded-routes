@@ -176,7 +176,7 @@ describe('<GuardProvider />', () => {
                 },
               ]}
               fallback={<div>loading...</div>}
-              inject={useAuth}
+              useInject={useAuth}
             >
               <Outlet />
             </GuardProvider>

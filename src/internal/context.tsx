@@ -7,7 +7,7 @@ import {
 } from '../type'
 export interface GuardContextValue {
   fallback?: React.ReactElement
-  inject?: (
+  useInject?: (
     to: ToGuardRouteOptions,
     from: FromGuardRouteOptions
   ) => Record<string, any>

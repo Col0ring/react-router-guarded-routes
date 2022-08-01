@@ -40,7 +40,7 @@ pnpm add react-router-guarded-routes react-router
 
 ### Basic
 
-Provides `GuardConfigProvider`, and you can use it like `react-router` (compatible with the apis of `react-router`).
+Provides `GuardConfigProvider` in `BrowserRouter`, and you can use it like `react-router` (compatible with the apis of `react-router`).
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -100,7 +100,7 @@ export default function App() {
 
 ### Guarding
 
-You can provide `GuardConfigProvider` with multiple guards middleware for route guarding.
+You can provide `GuardProvider` with multiple guards middleware for route guarding, `GuardProvider` can receive an array of guards and a fallback element (can be used to load loading state).
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -115,11 +115,25 @@ import {
 const logGuard: GuardMiddleware = (to, from, next) => {
   console.log(to) // { location, matches, route }
   console.log(from)
-  next() // call next function to show the route element
-  // it accepts the same parameters as navigate (useNavigate()) and behaves consistently.
+  next() // call next function to run the next middleware or show the route element, it accepts the same parameters as navigate (useNavigate()) and behaves consistently.
 }
 
-const guards = [logGuard]
+// you can use object to determine whether you need to register middleware
+const barGuard: GuardMiddleware = {
+  handler: (to, from, next) => {
+    console.log('bar')
+    next()
+  },
+  register: (to, from) => {
+    // only matched with `/bar` can be executed.
+    if (to.location.pathname.startsWith('/bar')) {
+      return true
+    }
+    return false
+  },
+}
+
+const guards = [logGuard, barGuard]
 
 export default function App() {
   return (
@@ -162,22 +176,7 @@ const fooGuard: GuardMiddleware = (to, from, next) => {
   next()
 }
 
-// you can use object to determine whether you need to register middleware
-const barGuard: GuardMiddleware = {
-  handler: (to, from, next) => {
-    console.log('bar')
-    next()
-  },
-  register: (to, from) => {
-    // only matched with `/bar` can be executed.å
-    if (to.location.pathname.startsWith('/bar')) {
-      return true
-    }
-    return false
-  },
-}
-
-const guards = [logGuard, barGuard]
+const guards = [logGuard]
 const fooGuards = [fooGuard]
 
 export default function App() {
@@ -341,7 +340,7 @@ export type GuardMiddleware<T = any, I = any> =
 
 #### GuardConfigProvider
 
-The `GuardConfigProvider` should not be used more than one in an app, make sure it's at the topmost level inside the Router (`BrowserRouter` and `HashRouter`).
+The `GuardConfigProvider` has configuration about routing, should not be used more than one in an app, make sure it's at the topmost level inside the Router (`BrowserRouter` and `HashRouter`).
 
 And it provides APIs for whether to run guard middleware and whether to display the fallback element:
 
@@ -397,7 +396,7 @@ import React from 'react'
 
 export interface GuardProviderProps {
   fallback?: React.ReactElement
-  inject?: (
+  useInject?: (
     to: ToGuardRouteOptions,
     from: FromGuardRouteOptions
   ) => Record<string, any>
@@ -406,11 +405,11 @@ export interface GuardProviderProps {
 }
 ```
 
-| Prop       | Optional | Default | Description                                                                                                                                |
-| ---------- | :------: | :-----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `fallback` |   Yes    |         | a fallback element to show when a `GuardedRoute` run guard middleware                                                                      |
-| `inject`   |   Yes    |  `{}`   | an injected value (React hooks can be used) for guard middleware to use, will be automatically merged the values of nested `GuardProvider` |
-| `guards`   |   Yes    |         | the guards to set for routes inside the `GuardProvider`                                                                                    |
+| Prop        | Optional | Default | Description                                                                                                                                |
+| ----------- | :------: | :-----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fallback`  |   Yes    |         | a fallback element to show when a `GuardedRoute` run guard middleware                                                                      |
+| `useInject` |   Yes    |         | an injected value (React hooks can be used) for guard middleware to use, will be automatically merged the values of nested `GuardProvider` |
+| `guards`    |   Yes    |         | the guards to set for routes inside the `GuardProvider`                                                                                    |
 
 ##### Setup
 
@@ -496,7 +495,7 @@ export default function App() {
         <GuardConfigProvider>
           <GuardProvider
             fallback={<div>loading...</div>}
-            inject={useAuth}
+            useInject={useAuth}
             guards={[
               (to, from, next, { injectedValue }) => {
                 console.log(injectedValue) // { isLogin: false }

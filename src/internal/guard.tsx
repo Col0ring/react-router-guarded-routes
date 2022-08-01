@@ -64,7 +64,11 @@ export const Guard: React.FC<GuardProps> = (props) => {
   const [validated, setValidated] = useState(false)
   const validatingRef = useRef(false)
   const { location, enableGuards, enableFallback } = useGuardConfigContext()
-  const { guards: wrapperGuards, fallback, inject = noop } = useGuardContext()
+  const {
+    guards: wrapperGuards,
+    fallback,
+    useInject = noop,
+  } = useGuardContext()
   const navigate = useNavigate()
   const guards = useMemo(
     () => [...(wrapperGuards || []), ...(guardsProp || [])],
@@ -90,7 +94,7 @@ export const Guard: React.FC<GuardProps> = (props) => {
     }),
     [location.from, prevMatches]
   )
-  const injectedValue = inject(toGuardRouteOptions, fromGuardRouteOptions)
+  const injectedValue = useInject(toGuardRouteOptions, fromGuardRouteOptions)
 
   const canRunGuard = useMemo(
     () => enableGuards(toGuardRouteOptions, fromGuardRouteOptions),
