@@ -1,34 +1,34 @@
 # React-Router-Guarded-Routes
 
-> English | [简体中文](./README-zh_CN.md)
+> [English](./README.md) | 简体中文
 
-A guard middleware for react-router v6, inspired by [`react-router-guards`](https://github.com/Upstatement/react-router-guards).
+一个用于 react-router v6 的路由守卫中间件，该中间件受到 [`react-router-guards`](https://github.com/Upstatement/react-router-guards) 启发。
 
-- [Install](#install)
-- [Usage](#usage)
-  - [Basic](#basic)
-  - [Guarding](#guarding)
+- [下载](#下载)
+- [使用](#使用)
+  - [基本使用](#基本使用)
+  - [路由守卫](#路由守卫)
 - [API](#api)
-  - [Types](#types)
-  - [Components](#components)
+  - [类型](#类型)
+  - [组件](#组件)
     - [GuardConfigProvider](#guardconfigprovider)
-      - [Props](#props)
-      - [Setup](#setup)
+      - [属性](#属性)
+      - [开始使用](#开始使用)
     - [GuardProvider](#guardprovider)
-      - [Props](#props-1)
-      - [Setup](#setup-1)
+      - [属性](#属性-1)
+      - [开始使用](#开始使用-1)
     - [GuardedRoutes](#guardedroutes)
-      - [Props](#props-2)
-      - [Setup](#setup-2)
+      - [属性](#属性-2)
+      - [开始使用](#开始使用-2)
     - [GuardedRoute](#guardedroute)
-      - [Props](#props-3)
-      - [Setup](#setup-3)
+      - [属性](#属性-3)
+      - [开始使用](#开始使用-3)
   - [Hooks](#hooks)
     - [useGuardedRoutes](#useguardedroutes)
-      - [Props](#props-4)
-      - [Setup](#setup-4)
+      - [属性](#属性-4)
+      - [开始使用](#开始使用-4)
 
-## Install
+## 下载
 
 ```sh
 npm install react-router-guarded-routes react-router --save
@@ -38,11 +38,11 @@ yarn add react-router-guarded-routes react-router
 pnpm add react-router-guarded-routes react-router
 ```
 
-## Usage
+## 使用
 
-### Basic
+### 基本使用
 
-Provides `GuardConfigProvider` in `BrowserRouter`, and you can use it like `react-router` (compatible with the apis of `react-router`).
+在 `BrowserRouter` 内部使用该库提供的 `GuardConfigProvider` 组件，然后像使用`react-router`一样使用它（适配 `react-router` 的 api）。
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -68,7 +68,7 @@ export default function App() {
 }
 ```
 
-Use hooks:
+使用 hooks:
 
 ```tsx
 import {
@@ -100,9 +100,9 @@ export default function App() {
 }
 ```
 
-### Guarding
+### 路由守卫
 
-You can provide `GuardProvider` with multiple guards middleware for route guarding, `GuardProvider` can receive an array of guards and a fallback element (can be used to load loading state).
+你可以通过在 `GuardProvider` 组件中使用多个中间件来进行路由守卫，`GuardProvider` 可以接收一个 guards 数组和一个 fallback 元素（可以用于加载 loading 态）。
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -117,17 +117,19 @@ import {
 const logGuard: GuardMiddleware = (to, from, next) => {
   console.log(to) // { location, matches, route }
   console.log(from)
-  next() // call next function to run the next middleware or show the route element, it accepts the same parameters as navigate (useNavigate()) and behaves consistently.
+  next() // 调用 next() 来执行下一个中间件或者显示路由元素，它接受与 navigate（useNavigate()）相同的参数并且行为一致。
 }
 
-// you can use object to determine whether you need to register middleware
+const guards = [logGuard]
+
+// 也可以传入对象来判断是否需要注册中间件
 const barGuard: GuardMiddleware = {
   handler: (to, from, next) => {
     console.log('bar')
     next()
   },
   register: (to, from) => {
-    // only matched with `/bar` can be executed.
+    // only matched with `/bar` can be executed.å
     if (to.location.pathname.startsWith('/bar')) {
       return true
     }
@@ -156,7 +158,7 @@ export default function App() {
 }
 ```
 
-Of course, you can also set up separate fallbacks and guards for each route.
+当然，你也可以分别为每个路由设置 fallback 和路由守卫。
 
 ```tsx
 import { BrowserRouter, Outlet } from 'react-router-dom'
@@ -212,7 +214,7 @@ export default function App() {
 }
 ```
 
-You can also call `next.ctx('ctx value')` to transfer contextual information, and get it by `ctxValue` in the next guard middleware. The guard middleware is executed from outside to inside, left to right.
+通过调用 `next.ctx('ctx value')` 来传递上下文信息，在下一个守卫中间件中通过 `ctxValue` 获取。 守卫中间件从外到内，从左到右执行。
 
 ```tsx
 <GuardConfigProvider>
@@ -236,7 +238,7 @@ You can also call `next.ctx('ctx value')` to transfer contextual information, an
 </GuardConfigProvider>
 ```
 
-And call `next.end()` to ignore remaining middleware.
+调用 `next.end()` 来忽略后续中间件。
 
 ```tsx
 <GuardConfigProvider>
@@ -266,7 +268,7 @@ And call `next.end()` to ignore remaining middleware.
 
 ## API
 
-### Types
+### 类型
 
 ```ts
 import {
@@ -338,15 +340,15 @@ export type GuardMiddleware<T = any, I = any> =
   | GuardMiddlewareObject<T, I>
 ```
 
-### Components
+### 组件
 
 #### GuardConfigProvider
 
-The `GuardConfigProvider` has configuration about routing, should not be used more than one in an app, make sure it's at the topmost level inside the Router (`BrowserRouter` and `HashRouter`).
+`GuardConfigProvider` 包含有整个路由相关的配置项，不应该在应用中存在多个，请确保它位于路由器内部的最顶层（`BrowserRouter` 和 `HashRouter`）。
 
-And it provides APIs for whether to run guard middleware and whether to display the fallback element:
+并且它提供了是否运行保护中间件以及是否显示回退元素的 API：
 
-##### Props
+##### 属性
 
 ```tsx
 import React from 'react'
@@ -364,12 +366,12 @@ export interface GuardConfigProviderProps {
 }
 ```
 
-| Prop             | Optional |                            Default                             | Description                             |
-| ---------------- | :------: | :------------------------------------------------------------: | --------------------------------------- |
-| `enableGuards`   |   Yes    | (to, from) => to.location.pathname !== from.location?.pathname | whether to run guard middleware         |
-| `enableFallback` |   Yes    |                           () => true                           | whether to display the fallback element |
+| 属性             | 可选 |                             默认值                             | 描述                   |
+| ---------------- | :--: | :------------------------------------------------------------: | ---------------------- |
+| `enableGuards`   |  是  | (to, from) => to.location.pathname !== from.location?.pathname | 是否执行中间件         |
+| `enableFallback` |  是  |                           () => true                           | 是否展示 fallback 元素 |
 
-##### Setup
+##### 开始使用
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -389,9 +391,9 @@ export default function App() {
 
 #### GuardProvider
 
-It provides public fallback element and guard middleware for `GuardedRoute`.
+为 `GuardedRoute` 提供公共的 `fallback` 元素守卫中间件。
 
-##### Props
+##### 属性
 
 ```tsx
 import React from 'react'
@@ -407,13 +409,13 @@ export interface GuardProviderProps {
 }
 ```
 
-| Prop        | Optional | Default | Description                                                                                                                                |
-| ----------- | :------: | :-----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `fallback`  |   Yes    |         | a fallback element to show when a `GuardedRoute` run guard middleware                                                                      |
-| `useInject` |   Yes    |         | an injected value (React hooks can be used) for guard middleware to use, will be automatically merged the values of nested `GuardProvider` |
-| `guards`    |   Yes    |         | the guards to set for routes inside the `GuardProvider`                                                                                    |
+| 属性        | 可选 | 默认值 | 描述                                                                                                     |
+| ----------- | :--: | :----: | -------------------------------------------------------------------------------------------------------- |
+| `fallback`  |  是  |        | 当 `GuardedRoute` 运行守卫中间件时显示的替代元素                                                         |
+| `useInject` |  是  |        | 一个可供守卫中间件使用的注入值（可以在内部使用 hooks），会自动合并嵌套 `GuardProvider` 的 `useInject` 值 |
+| `guards`    |  是  |        | 公共的路由守卫                                                                                           |
 
-##### Setup
+##### 开始使用
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -445,7 +447,7 @@ export default function App() {
 }
 ```
 
-Use nested GuardProvider:
+使用嵌套的 `GuardProvider`：
 
 ```tsx
 <GuardConfigProvider>
@@ -470,7 +472,7 @@ Use nested GuardProvider:
 </GuardConfigProvider>
 ```
 
-Inject value:
+注入值：
 
 ```tsx
 import { createContext } from 'react'
@@ -518,9 +520,9 @@ export default function App() {
 
 #### GuardedRoutes
 
-The `GuardedRoutes` component acts as a replacement for the default `Routes` component provided by React Router.
+使用 `GuardedRoutes` 组件来替代 React Router 默认提供的 `Routes` 组件。
 
-##### Props
+##### 属性
 
 ```tsx
 import { RoutesProps } from 'react-router'
@@ -528,7 +530,7 @@ import { RoutesProps } from 'react-router'
 export interface GuardedRoutesProps extends RoutesProps {}
 ```
 
-##### Setup
+##### 开始使用
 
 ```tsx
 <BrowserRouter>
@@ -542,9 +544,9 @@ export interface GuardedRoutesProps extends RoutesProps {}
 
 #### GuardedRoute
 
-The `GuardedRoute` component acts as a replacement for the default `Route` component provided by React Router, allowing for routes to use guard middleware and accepting the same props as regular `Route`.
+使用 `GuardedRoute` 组件来替代 React Router 默认提供的 `Route` 组件，它允许额外接收守卫中间件与 fallback 元素作为属性。
 
-##### Props
+##### 属性
 
 ```tsx
 import { Route } from 'react-router'
@@ -553,14 +555,14 @@ type RouteProps = Parameters<typeof Route>[0]
 export type GuardedRouteProps = RouteProps & GuardedRouteConfig
 ```
 
-The following table explains the guard-specific props for this component.
+下表包含该组件独有的属性：
 
-| Prop       | Optional | Default | Description                                                                                                                        |
-| ---------- | :------: | :-----: | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `fallback` |   Yes    |         | a fallback element to show when a `GuardedRoute` run guard middleware. (it will override the fallback provided by `GuardProvider`) |
-| `guards`   |   Yes    |         | the guards to set for the route                                                                                                    |
+| 属性       | 可选 | 默认值 | 描述                                                                                      |
+| ---------- | :--: | :----: | ----------------------------------------------------------------------------------------- |
+| `fallback` |  是  |        | 当 `GuardedRoute` 运行守卫中间件时显示的替代元素. (会覆盖`GuardProvider`提供的 fallback） |
+| `guards`   |  是  |        | 路由守卫                                                                                  |
 
-##### Setup
+##### 开始使用
 
 ```tsx
 <GuardedRoutes>
@@ -581,9 +583,9 @@ The following table explains the guard-specific props for this component.
 
 #### useGuardedRoutes
 
-The `useGuardedRoutes` hook acts as a replacement for the default `useRoutes` hook provided by React Router, and additionally provides `fallback` and `guards` properties for each member.
+使用 `useGuardedRoutes` 可以来替代 React Router 默认提供的 `useRoutes` ，它为每个成员额外提供了 `fallback` 与 `guards` 属性。
 
-##### Props
+##### 属性
 
 ```tsx
 import { useRoutes } from 'react-router'
@@ -596,7 +598,7 @@ export function useGuardedRoutes(
 ): ReturnType<typeof useRoutes>
 ```
 
-##### Setup
+##### 开始使用
 
 ```tsx
 import {
