@@ -25,7 +25,7 @@ function transformGuardedRoutes(
           : undefined,
       children:
         children !== undefined ? transformGuardedRoutes(children) : undefined,
-    }
+    } as RouteObject
   })
 }
 

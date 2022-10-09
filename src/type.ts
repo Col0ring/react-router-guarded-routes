@@ -13,9 +13,10 @@ export interface GuardedRouteConfig {
   [props: PropertyKey]: any
 }
 
-export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {
-  children?: GuardedRouteObject[]
-}
+export type GuardedRouteObject = RouteObject &
+  GuardedRouteConfig & {
+    children?: GuardedRouteObject[]
+  }
 
 export interface NextFunction<T> extends NavigateFunction {
   (): void
