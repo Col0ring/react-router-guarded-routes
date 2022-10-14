@@ -4,29 +4,30 @@
 
 一个用于 react-router v6 的路由守卫中间件，该中间件受到 [`react-router-guards`](https://github.com/Upstatement/react-router-guards) 启发。
 
-- [下载](#下载)
-- [使用](#使用)
-  - [基本使用](#基本使用)
-  - [路由守卫](#路由守卫)
-- [API](#api)
-  - [类型](#类型)
-  - [组件](#组件)
-    - [GuardConfigProvider](#guardconfigprovider)
-      - [属性](#属性)
-      - [开始使用](#开始使用)
-    - [GuardProvider](#guardprovider)
-      - [属性](#属性-1)
-      - [开始使用](#开始使用-1)
-    - [GuardedRoutes](#guardedroutes)
-      - [属性](#属性-2)
-      - [开始使用](#开始使用-2)
-    - [GuardedRoute](#guardedroute)
-      - [属性](#属性-3)
-      - [开始使用](#开始使用-3)
-  - [Hooks](#hooks)
-    - [useGuardedRoutes](#useguardedroutes)
-      - [属性](#属性-4)
-      - [开始使用](#开始使用-4)
+- [React-Router-Guarded-Routes](#react-router-guarded-routes)
+  - [下载](#下载)
+  - [使用](#使用)
+    - [基本使用](#基本使用)
+    - [路由守卫](#路由守卫)
+  - [API](#api)
+    - [类型](#类型)
+    - [组件](#组件)
+      - [GuardConfigProvider](#guardconfigprovider)
+        - [属性](#属性)
+        - [开始使用](#开始使用)
+      - [GuardProvider](#guardprovider)
+        - [属性](#属性-1)
+        - [开始使用](#开始使用-1)
+      - [GuardedRoutes](#guardedroutes)
+        - [属性](#属性-2)
+        - [开始使用](#开始使用-2)
+      - [GuardedRoute](#guardedroute)
+        - [属性](#属性-3)
+        - [开始使用](#开始使用-3)
+    - [Hooks](#hooks)
+      - [useGuardedRoutes](#useguardedroutes)
+        - [属性](#属性-4)
+        - [开始使用](#开始使用-4)
 
 ## 下载
 
@@ -271,6 +272,7 @@ export default function App() {
 ### 类型
 
 ```ts
+import React from 'react'
 import {
   Location,
   NavigateFunction,
@@ -285,9 +287,10 @@ export interface GuardedRouteConfig {
   [props: PropertyKey]: any
 }
 
-export interface GuardedRouteObject extends RouteObject, GuardedRouteConfig {
-  children?: GuardedRouteObject[]
-}
+export type GuardedRouteObject = RouteObject &
+  GuardedRouteConfig & {
+    children?: GuardedRouteObject[]
+  }
 
 export interface NextFunction<T> extends NavigateFunction {
   (): void
