@@ -57,7 +57,7 @@ const App: React.FC = () => {
       <GuardConfigProvider>
         <GuardProvider
           fallback={<div>loading...</div>}
-          inject={useAuth}
+          useInject={useAuth}
           guards={[authGuard]}
         >
           <AuthContext.Provider value={context}>

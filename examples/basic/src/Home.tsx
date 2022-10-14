@@ -28,7 +28,7 @@ const Home: React.FC = () => {
       <GuardedRoutes>
         <GuardProvider
           fallback={<div>loading home...</div>}
-          inject={useInject}
+          useInject={useInject}
           guards={[
             (to, from, next, { injectedValue }) => {
               console.log(injectedValue)
